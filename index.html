@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulator Gestionare Lenjerie Spital</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; }
+    #root { min-height: 100vh; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { opacity: 1; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// --- Constante ---
+const ETAJE = [
+  { id: 1, name: "Etaj 1 – ATI", rooms: ["101", "102", "103", "104"] },
+  { id: 2, name: "Etaj 2 – Chirurgie", rooms: ["201", "202", "203"] },
+  { id: 3, name: "Etaj 3 – General", rooms: ["301", "302", "303", "304", "305"] },
+];
+
+const TIPURI_LENJERIE = [
+  { id: "bedsheet", label: "Cearceafuri", color: "#0071e3", icon: "🛏️" },
+  { id: "towel", label: "Prosoape", color: "#34c759", icon: "🧴" },
+  { id: "gown", label: "Halate pacient", color: "#af52de", icon: "👔" },
+  { id: "blanket", label: "Paturi", color: "#ff9500", icon: "🧣" },
+];
+
+// --- Particula animata ---
+function Particle({ from, to, color, progress, label }) {
+  const x = from.x + (to.x - from.x) * progress;
+  const y = from.y + (to.y - from.y) * progress;
+  return (
+    <g>
+      <circle cx={x} cy={y} r={5} fill={color} opacity={0.85}>
+        <animate attributeName="r" values="4;6;4" dur="0.8s" repeatCount="indefinite" />
+      </circle>
+      {label && (
+        <text x={x} y={y - 10} textAnchor="middle" fontSize="9" fill={color} fontWeight="600">
+          {label}
+        </text>
+      )}
+    </g>
+  );
+}
+
+// --- Input cu pas ---
+function StepperInput({ value, onChange, min = 0, max = 9999, step = 10, accentColor = "#0071e3", width = 140 }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <button
+        onClick={() => onChange(Math.max(min, value - step))}
+        style={{
+          background: "#f5f5f7", color: "#86868b", border: "1px solid #d2d2d7", borderRadius: 8,
+          width: 32, height: 32, cursor: "pointer", fontWeight: 600, fontSize: 16,
+          display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+        }}
+      >−</button>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => {
+          const v = parseInt(e.target.value) || 0;
+          onChange(Math.max(min, Math.min(max, v)));
+        }}
+        style={{
+          width, background: "#fff", color: "#1d1d1f", border: "1px solid #d2d2d7", borderRadius: 10,
+          padding: "6px 8px", textAlign: "center", fontWeight: 600, fontSize: 16,
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif",
+          outline: "none",
+        }}
+      />
+      <button
+        onClick={() => onChange(Math.min(max, value + step))}
+        style={{
+          background: accentColor, color: "#fff", border: "none", borderRadius: 8,
+          width: 32, height: 32, cursor: "pointer", fontWeight: 600, fontSize: 16,
+          display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+        }}
+      >+</button>
+    </div>
+  );
+}
+
+// --- Componenta principala ---
+function HospitalLinenSimulator() {
+  const [pickupTime, setPickupTime] = useState("12:00");
+  const [returnTime, setReturnTime] = useState("18:00");
+  const [lastPickup, setLastPickup] = useState(null);
+  const [lastReturn, setLastReturn] = useState(null);
+  const [gw1Qty, setGw1Qty] = useState(400);
+  const [floorAlloc, setFloorAlloc] = useState([150, 130, 120]);
+  const [cleanRoom, setCleanRoom] = useState({ bedsheet: 80, towel: 60, gown: 40, blanket: 30 });
+  const [dirtyRoom, setDirtyRoom] = useState({ bedsheet: 20, towel: 15, gown: 10, blanket: 8 });
+  const [floorStock, setFloorStock] = useState(
+    ETAJE.map((f) => ({ floorId: f.id, bedsheet: 10, towel: 8, gown: 5, blanket: 4 }))
+  );
+  const [externalCleaning, setExternalCleaning] = useState({ bedsheet: 0, towel: 0, gown: 0, blanket: 0 });
+  const [particles, setParticles] = useState([]);
+  const [log, setLog] = useState([]);
+  const [simRunning, setSimRunning] = useState(false);
+  const [simSpeed, setSimSpeed] = useState(1);
+  const [selectedView, setSelectedView] = useState("flow");
+  const particleId = useRef(0);
+  const simInterval = useRef(null);
+
+  const gw2Qty = floorAlloc.reduce((a, b) => a + b, 0);
+  const allocatedTotal = floorAlloc.reduce((a, b) => a + b, 0);
+  const remainInClean = Math.max(0, gw1Qty - allocatedTotal);
+
+  const setFloorAllocAt = (idx, val) => {
+    setFloorAlloc((prev) => prev.map((v, i) => (i === idx ? Math.max(0, val) : v)));
+  };
+
+  const positions = {
+    gateway1: { x: 40, y: 260 },
+    cleanRoom: { x: 160, y: 260 },
+    dirtyRoom: { x: 770, y: 260 },
+    gateway2: { x: 600, y: 260 },
+    floor1: { x: 450, y: 100 },
+    floor2: { x: 450, y: 260 },
+    floor3: { x: 450, y: 420 },
+    company: { x: 870, y: 260 },
+    returnBottom: { x: 870, y: 490 },
+    returnLeft: { x: 40, y: 490 },
+  };
+
+  const addLog = useCallback((msg) => {
+    const ts = new Date().toLocaleTimeString();
+    setLog((prev) => [{ ts, msg }, ...prev].slice(0, 50));
+  }, []);
+
+  const spawnParticle = useCallback((from, to, color, label, duration = 2000) => {
+    const id = ++particleId.current;
+    setParticles((prev) => [...prev, { id, from, to, color, label, start: Date.now(), duration }]);
+    setTimeout(() => setParticles((prev) => prev.filter((p) => p.id !== id)), duration);
+  }, []);
+
+  const distributeToFloor = useCallback(
+    (floorIdx, linenType, qty) => {
+      if (cleanRoom[linenType] < qty) return;
+      setCleanRoom((prev) => ({ ...prev, [linenType]: prev[linenType] - qty }));
+      setFloorStock((prev) => prev.map((f, i) => (i === floorIdx ? { ...f, [linenType]: f[linenType] + qty } : f)));
+      const floorPos = [positions.floor1, positions.floor2, positions.floor3][floorIdx];
+      for (let i = 0; i < Math.min(qty, 5); i++) {
+        setTimeout(() => spawnParticle(positions.cleanRoom, floorPos, "#34c759", `${qty}×`, 1200), i * 200);
+      }
+      addLog(`Distribuit ${qty} ${linenType} catre ${ETAJE[floorIdx].name}`);
+    },
+    [cleanRoom, addLog, spawnParticle]
+  );
+
+  const collectFromFloor = useCallback(
+    (floorIdx, linenType, qty) => {
+      if (floorStock[floorIdx][linenType] < qty) return;
+      setFloorStock((prev) => prev.map((f, i) => (i === floorIdx ? { ...f, [linenType]: f[linenType] - qty } : f)));
+      setDirtyRoom((prev) => ({ ...prev, [linenType]: prev[linenType] + qty }));
+      const floorPos = [positions.floor1, positions.floor2, positions.floor3][floorIdx];
+      for (let i = 0; i < Math.min(qty, 5); i++) {
+        setTimeout(() => {
+          spawnParticle(floorPos, positions.gateway2, "#ff3b30", `${qty}×`, 800);
+          setTimeout(() => spawnParticle(positions.gateway2, positions.dirtyRoom, "#ff9500", "", 1000), 600);
+        }, i * 200);
+      }
+      addLog(`Colectat ${qty} ${linenType} murdar(e) de pe ${ETAJE[floorIdx].name} prin GW2`);
+    },
+    [floorStock, addLog, spawnParticle]
+  );
+
+  const sendToCleaning = useCallback(
+    (linenType, qty) => {
+      if (dirtyRoom[linenType] < qty) return;
+      setDirtyRoom((prev) => ({ ...prev, [linenType]: prev[linenType] - qty }));
+      setExternalCleaning((prev) => ({ ...prev, [linenType]: prev[linenType] + qty }));
+      spawnParticle(positions.dirtyRoom, { x: 870, y: 140 }, "#af52de", `${qty}`, 1200);
+      addLog(`Trimis ${qty} ${linenType} la firma de spalatorie`);
+    },
+    [dirtyRoom, addLog, spawnParticle]
+  );
+
+  const returnFromCleaning = useCallback(
+    (linenType, qty) => {
+      if (externalCleaning[linenType] < qty) return;
+      setExternalCleaning((prev) => ({ ...prev, [linenType]: prev[linenType] - qty }));
+      setCleanRoom((prev) => ({ ...prev, [linenType]: prev[linenType] + qty }));
+      spawnParticle(positions.company, positions.returnBottom, "#34c759", `${qty}`, 700);
+      setTimeout(() => spawnParticle(positions.returnBottom, positions.returnLeft, "#34c759", "", 900), 500);
+      setTimeout(() => spawnParticle(positions.returnLeft, positions.gateway1, "#34c759", "", 700), 1200);
+      setTimeout(() => spawnParticle(positions.gateway1, positions.cleanRoom, "#34c759", "", 500), 1700);
+      addLog(`Primit ${qty} ${linenType} curate inapoi de la firma`);
+    },
+    [externalCleaning, addLog, spawnParticle]
+  );
+
+  const sendAllDirtyToCompany = useCallback(() => {
+    const total = Object.values(dirtyRoom).reduce((a, b) => a + b, 0);
+    if (total === 0) return;
+    const snapshot = { ...dirtyRoom };
+    setExternalCleaning((prev) => {
+      const next = { ...prev };
+      for (const lt of TIPURI_LENJERIE) next[lt.id] += snapshot[lt.id];
+      return next;
+    });
+    setDirtyRoom({ bedsheet: 0, towel: 0, gown: 0, blanket: 0 });
+    setLastPickup(new Date().toLocaleTimeString());
+    for (let i = 0; i < Math.min(total, 8); i++) {
+      setTimeout(() => spawnParticle(positions.dirtyRoom, { x: 870, y: 140 }, "#af52de", i === 0 ? `${total}` : "", 1200), i * 150);
+    }
+    addLog(`RIDICARE PROGRAMATA @ ${pickupTime} — Trimis TOATE cele ${total} articole murdare la spalatorie`);
+    const breakdown = TIPURI_LENJERIE.map((lt) => `${lt.icon}${snapshot[lt.id]}`).join(" ");
+    addLog(`   Detalii: ${breakdown}`);
+  }, [dirtyRoom, pickupTime, addLog, spawnParticle]);
+
+  const returnAllFromCompany = useCallback(() => {
+    const total = Object.values(externalCleaning).reduce((a, b) => a + b, 0);
+    if (total === 0) return;
+    const snapshot = { ...externalCleaning };
+    setCleanRoom((prev) => {
+      const next = { ...prev };
+      for (const lt of TIPURI_LENJERIE) next[lt.id] += snapshot[lt.id];
+      return next;
+    });
+    setExternalCleaning({ bedsheet: 0, towel: 0, gown: 0, blanket: 0 });
+    setLastReturn(new Date().toLocaleTimeString());
+    for (let i = 0; i < Math.min(total, 8); i++) {
+      setTimeout(() => {
+        spawnParticle(positions.company, positions.returnBottom, "#34c759", i === 0 ? `${total}` : "", 700);
+        setTimeout(() => spawnParticle(positions.returnBottom, positions.returnLeft, "#34c759", "", 900), 500);
+        setTimeout(() => spawnParticle(positions.returnLeft, positions.gateway1, "#34c759", "", 700), 1200);
+        setTimeout(() => spawnParticle(positions.gateway1, positions.cleanRoom, "#34c759", "", 500), 1700);
+      }, i * 250);
+    }
+    addLog(`RETURNARE PROGRAMATA @ ${returnTime} — Primit TOATE cele ${total} articole curate inapoi`);
+    const breakdown = TIPURI_LENJERIE.map((lt) => `${lt.icon}${snapshot[lt.id]}`).join(" ");
+    addLog(`   Detalii: ${breakdown}`);
+  }, [externalCleaning, returnTime, addLog, spawnParticle]);
+
+  useEffect(() => {
+    if (simRunning) {
+      simInterval.current = setInterval(() => {
+        const fIdx = Math.floor(Math.random() * 3);
+        const lt = TIPURI_LENJERIE[Math.floor(Math.random() * 4)].id;
+        distributeToFloor(fIdx, lt, Math.floor(Math.random() * 3) + 1);
+        setTimeout(() => {
+          const fIdx2 = Math.floor(Math.random() * 3);
+          const lt2 = TIPURI_LENJERIE[Math.floor(Math.random() * 4)].id;
+          collectFromFloor(fIdx2, lt2, Math.max(1, Math.floor(Math.random() * 2)));
+        }, 1500 / simSpeed);
+        setTimeout(() => {
+          const lt3 = TIPURI_LENJERIE[Math.floor(Math.random() * 4)].id;
+          sendToCleaning(lt3, Math.floor(Math.random() * 3) + 1);
+        }, 2500 / simSpeed);
+        setTimeout(() => {
+          const lt4 = TIPURI_LENJERIE[Math.floor(Math.random() * 4)].id;
+          returnFromCleaning(lt4, Math.floor(Math.random() * 2) + 1);
+        }, 3500 / simSpeed);
+      }, 4000 / simSpeed);
+    }
+    return () => clearInterval(simInterval.current);
+  }, [simRunning, simSpeed, distributeToFloor, collectFromFloor, sendToCleaning, returnFromCleaning]);
+
+  const totalClean = Object.values(cleanRoom).reduce((a, b) => a + b, 0);
+  const totalDirty = Object.values(dirtyRoom).reduce((a, b) => a + b, 0);
+  const totalExternal = Object.values(externalCleaning).reduce((a, b) => a + b, 0);
+  const totalFloors = floorStock.reduce((acc, f) => acc + Object.values(f).filter((v) => typeof v === "number").reduce((a, b) => a + b, 0), 0);
+  const grandTotal = totalClean + totalDirty + totalExternal + totalFloors;
+
+  // --- Apple-style shared styles ---
+  const font = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', sans-serif";
+
+  const card = {
+    background: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+    border: "1px solid rgba(0,0,0,0.06)",
+  };
+
+  const cardSmall = (accent) => ({
+    background: "#fff",
+    borderRadius: 14,
+    padding: "10px 16px",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+    border: "1px solid rgba(0,0,0,0.06)",
+    position: "relative",
+    overflow: "hidden",
+  });
+
+  const btnPrimary = (bg) => ({
+    background: bg,
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    padding: "10px 22px",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 15,
+    fontFamily: font,
+    transition: "all 0.2s",
+    letterSpacing: "-0.01em",
+  });
+
+  const btnSmall = (bg) => ({
+    background: bg,
+    color: "#fff",
+    border: "none",
+    borderRadius: 6,
+    padding: "4px 12px",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 13,
+    fontFamily: font,
+    transition: "all 0.15s",
+  });
+
+  const inputStyle = () => ({
+    width: 66, background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7", borderRadius: 8,
+    padding: "6px 8px", textAlign: "center", fontWeight: 600, fontSize: 16, fontFamily: font,
+    outline: "none",
+  });
+
+  return (
+    <div style={{
+      fontFamily: font,
+      background: "#f5f5f7",
+      color: "#1d1d1f",
+      minHeight: "100vh",
+      padding: "24px 16px",
+      WebkitFontSmoothing: "antialiased",
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
+        <div>
+          <h1 style={{
+            margin: 0, fontSize: 34, fontWeight: 700, color: "#1d1d1f",
+            letterSpacing: "-0.025em", lineHeight: 1.15,
+          }}>
+            Simulator Gestionare Lenjerie
+          </h1>
+          <p style={{ margin: "8px 0 0", fontSize: 16, color: "#86868b", fontWeight: 400, letterSpacing: "-0.01em" }}>
+            Flux RFID — Poarta 1 → Camera Curata → Etaje → Poarta 2 (suma auto) → Camera Murdara → Firma Spalatorie
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <button
+            onClick={() => setSimRunning(!simRunning)}
+            style={btnPrimary(simRunning ? "#ff3b30" : "#34c759")}
+          >
+            {simRunning ? "Opreste" : "Porneste"} Simularea
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", borderRadius: 10, padding: "6px 14px", border: "1px solid #d2d2d7" }}>
+            <span style={{ fontSize: 14, color: "#86868b", fontWeight: 500 }}>Viteza</span>
+            <input type="range" min={0.5} max={4} step={0.5} value={simSpeed} onChange={(e) => setSimSpeed(Number(e.target.value))}
+              style={{ width: 72, accentColor: "#0071e3" }}
+            />
+            <span style={{ fontSize: 14, color: "#1d1d1f", fontWeight: 600, minWidth: 28 }}>{simSpeed}×</span>
+          </div>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
+        {[
+          { label: "GW1 Intrare", value: gw1Qty, color: "#0071e3", bg: "rgba(0,113,227,0.06)" },
+          { label: "Camera Curata", value: totalClean, color: "#34c759", bg: "rgba(52,199,89,0.06)" },
+          { label: "Alocat pe Etaje", value: allocatedTotal, color: "#5856d6", bg: "rgba(88,86,214,0.06)" },
+          { label: "Ramas in Curata", value: remainInClean, color: "#007aff", bg: "rgba(0,122,255,0.06)" },
+          { label: "GW2 (Σ auto)", value: gw2Qty, color: "#ff3b30", bg: "rgba(255,59,48,0.06)" },
+          { label: "Camera Murdara", value: totalDirty, color: "#ff9500", bg: "rgba(255,149,0,0.06)" },
+          { label: "La Spalatorie", value: totalExternal, color: "#af52de", bg: "rgba(175,82,222,0.06)" },
+          { label: "Total General", value: grandTotal, color: "#1d1d1f", bg: "rgba(0,0,0,0.03)" },
+        ].map((kpi) => (
+          <div key={kpi.label} style={{
+            ...cardSmall(kpi.color),
+            background: kpi.bg,
+            borderColor: "transparent",
+          }}>
+            <div style={{ fontSize: 14, color: "#86868b", fontWeight: 500, marginBottom: 6, letterSpacing: "-0.01em" }}>{kpi.label}</div>
+            <div style={{ fontSize: 30, fontWeight: 700, color: kpi.color, letterSpacing: "-0.03em" }}>{kpi.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tab Navigation */}
+      <div style={{
+        display: "flex", gap: 2, marginBottom: 16,
+        background: "#e8e8ed", borderRadius: 10, padding: 3, width: "fit-content",
+      }}>
+        {[
+          { id: "flow", label: "Flux & Comenzi" },
+          { id: "manage", label: "Operatiuni" },
+          { id: "inventory", label: "Inventar" },
+          { id: "log", label: "Jurnal" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setSelectedView(tab.id)}
+            style={{
+              padding: "10px 24px", borderRadius: 8, border: "none", cursor: "pointer",
+              fontSize: 15, fontWeight: 500, fontFamily: font, transition: "all 0.2s",
+              letterSpacing: "-0.01em",
+              background: selectedView === tab.id ? "#fff" : "transparent",
+              color: selectedView === tab.id ? "#1d1d1f" : "#86868b",
+              boxShadow: selectedView === tab.id ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* === FLUX & COMENZI === */}
+      {selectedView === "flow" && (
+        <div style={{ ...card, padding: "20px 20px 0 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 14, marginBottom: 20, alignItems: "start" }}>
+
+            {/* GW1 */}
+            <div style={{
+              background: "rgba(0,113,227,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(0,113,227,0.15)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0071e3", marginBottom: 6 }}>Poarta 1</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Intrare</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 6 }}>Cantitate intrare:</div>
+              <StepperInput value={gw1Qty} onChange={setGw1Qty} step={50} accentColor="#0071e3" width={70} />
+              <div style={{ fontSize: 13, color: "#86868b", marginTop: 8 }}>
+                Alocat: {allocatedTotal} · Ramas: {remainInClean}
+              </div>
+              {allocatedTotal > gw1Qty && (
+                <div style={{
+                  fontSize: 13, color: "#ff3b30", marginTop: 6, fontWeight: 600,
+                  background: "rgba(255,59,48,0.08)", borderRadius: 6, padding: "4px 8px",
+                }}>
+                  Supra-alocat cu {allocatedTotal - gw1Qty}
+                </div>
+              )}
+            </div>
+
+            {/* Camera Curata */}
+            <div style={{
+              background: "rgba(52,199,89,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(52,199,89,0.15)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Camera Curata</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Primeste de la GW1</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#34c759", letterSpacing: "-0.03em" }}>{gw1Qty}</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginTop: 6 }}>
+                Stoc detaliat: {totalClean} articole
+              </div>
+              <div style={{ fontSize: 12, color: "#86868b", marginTop: 4, lineHeight: 1.6 }}>
+                {TIPURI_LENJERIE.map((lt) => `${lt.icon} ${cleanRoom[lt.id]}`).join("   ")}
+              </div>
+            </div>
+
+            {/* Alocare pe etaje */}
+            <div style={{
+              background: "rgba(88,86,214,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(88,86,214,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
+              {ETAJE.map((floor, i) => (
+                <div key={floor.id} style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] - 10)} style={btnSmall("#86868b")}>−</button>
+                    <input
+                      type="number"
+                      value={floorAlloc[i]}
+                      onChange={(e) => setFloorAllocAt(i, parseInt(e.target.value) || 0)}
+                      style={inputStyle()}
+                    />
+                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] + 10)} style={btnSmall("#5856d6")}>+</button>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 3 }}>
+                    Saloane: {floor.rooms.join(", ")}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* GW2 — Suma automata */}
+            <div style={{
+              background: "rgba(255,59,48,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(255,59,48,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff3b30", marginBottom: 6 }}>Poarta 2</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Iesire</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 4 }}>Calcul automat (Σ Etaje):</div>
+              <div style={{ fontSize: 36, fontWeight: 700, color: "#ff3b30", letterSpacing: "-0.04em" }}>{gw2Qty}</div>
+              <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 6 }}>
+                = {floorAlloc.map((v, i) => `E${i + 1}:${v}`).join(" + ")}
+              </div>
+            </div>
+
+            {/* Camera Murdara + Program */}
+            <div style={{
+              background: "rgba(255,149,0,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(255,149,0,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff9500", marginBottom: 4 }}>Camera Murdara</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "#ff9500", letterSpacing: "-0.02em" }}>{totalDirty} art.</div>
+
+              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#af52de", marginBottom: 6 }}>Ridicare → Spalatorie</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
+                  <input
+                    type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)}
+                    style={{
+                      background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7",
+                      borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: font,
+                    }}
+                  />
+                </div>
+                <button onClick={sendAllDirtyToCompany} style={{
+                  ...btnPrimary("#af52de"), width: "100%", fontSize: 13, padding: "8px 10px",
+                }}>
+                  Trimite tot ({totalDirty}) @ {pickupTime}
+                </button>
+                {lastPickup && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastPickup}</div>}
+              </div>
+
+              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#0071e3", marginBottom: 6 }}>Returnare ← Spalatorie</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
+                  <input
+                    type="time" value={returnTime} onChange={(e) => setReturnTime(e.target.value)}
+                    style={{
+                      background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7",
+                      borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: font,
+                    }}
+                  />
+                </div>
+                <button onClick={returnAllFromCompany} style={{
+                  ...btnPrimary("#0071e3"), width: "100%", fontSize: 13, padding: "8px 10px",
+                }}>
+                  Primeste tot ({totalExternal}) @ {returnTime}
+                </button>
+                {lastReturn && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastReturn}</div>}
+                <div style={{ fontSize: 13, color: "#af52de", marginTop: 8, fontWeight: 500 }}>La firma: {totalExternal} art.</div>
+              </div>
+            </div>
+          </div>
+
+          {/* SVG Diagram */}
+          <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", margin: "0 -20px -20px -20px", borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+            <svg viewBox="0 0 920 540" style={{ width: "100%", maxHeight: 340 }}>
+              <defs>
+                <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
+                </marker>
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff3b30" />
+                </marker>
+                <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#af52de" />
+                </marker>
+                <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#0071e3" />
+                </marker>
+                <filter id="softShadow" x="-10%" y="-10%" width="120%" height="130%">
+                  <feDropShadow dx="0" dy="1" stdDeviation="3" floodOpacity="0.08" />
+                </filter>
+              </defs>
+
+              {/* Background grid dots */}
+              {Array.from({ length: 18 }).map((_, xi) =>
+                Array.from({ length: 10 }).map((_, yi) => (
+                  <circle key={`${xi}-${yi}`} cx={xi * 52 + 10} cy={yi * 56 + 10} r={0.6} fill="#d2d2d7" opacity={0.4} />
+                ))
+              )}
+
+              {/* Connection lines */}
+              <line x1={65} y1={260} x2={85} y2={260} stroke="#0071e3" strokeWidth={5} markerEnd="url(#arrow-blue)" opacity={0.6} />
+              <line x1={245} y1={240} x2={388} y2={110} stroke="#34c759" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-green)" opacity={0.45} />
+              <line x1={245} y1={260} x2={388} y2={260} stroke="#34c759" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-green)" opacity={0.45} />
+              <line x1={245} y1={280} x2={388} y2={410} stroke="#34c759" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-green)" opacity={0.45} />
+
+              <text x={300} y={168} textAnchor="middle" fontSize="14" fill="#34c759" fontWeight="600">{floorAlloc[0]}</text>
+              <text x={318} y={252} textAnchor="middle" fontSize="14" fill="#34c759" fontWeight="600">{floorAlloc[1]}</text>
+              <text x={300} y={355} textAnchor="middle" fontSize="14" fill="#34c759" fontWeight="600">{floorAlloc[2]}</text>
+
+              <line x1={531} y1={110} x2={575} y2={240} stroke="#ff9500" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.4} />
+              <line x1={531} y1={260} x2={575} y2={260} stroke="#ff9500" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.4} />
+              <line x1={531} y1={410} x2={575} y2={280} stroke="#ff9500" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.4} />
+
+              <text x={555} y={168} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[0]}</text>
+              <text x={545} y={252} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[1]}</text>
+              <text x={555} y={355} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[2]}</text>
+
+              <line x1={630} y1={260} x2={720} y2={260} stroke="#ff3b30" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
+              <path d="M 840 260 L 875 260 L 875 180" stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" fill="none" markerEnd="url(#arrow-purple)" opacity={0.5} />
+              <text x={882} y={220} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
+
+              {/* Return path */}
+              <path d="M 875 180 L 900 180 L 900 510 L 15 510 L 15 290 L 15 260 L 20 260"
+                stroke="#0071e3" strokeWidth={4} strokeDasharray="10,5" fill="none" markerEnd="url(#arrow-blue)" opacity={0.4} />
+              <text x={460} y={527} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="500" opacity={0.7}>
+                Returnare @ {returnTime} — Lenjerie curata inapoi prin GW1
+              </text>
+
+              {/* GW1 */}
+              <rect x={15} y={218} width={55} height={84} rx={12} fill="#fff" stroke="#0071e3" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={42} y={240} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="700">GW1</text>
+              <text x={42} y={254} textAnchor="middle" fontSize="10" fill="#86868b">RFID</text>
+              <text x={42} y={274} textAnchor="middle" fontSize="18" fill="#0071e3" fontWeight="700">{gw1Qty}</text>
+              <text x={42} y={295} textAnchor="middle" fontSize="9" fill="#aeaeb2" fontWeight="500">INTRARE</text>
+              <circle cx={10} cy={235} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" repeatCount="indefinite" /></circle>
+              <circle cx={10} cy={275} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.5s" repeatCount="indefinite" /></circle>
+              <circle cx={75} cy={235} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="1s" repeatCount="indefinite" /></circle>
+              <circle cx={75} cy={275} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
+
+              {/* Camera Curata */}
+              <rect x={80} y={210} width={165} height={100} rx={14} fill="#fff" stroke="#34c759" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={162} y={232} textAnchor="middle" fontSize="14" fill="#34c759" fontWeight="700">Camera Curata</text>
+              <text x={162} y={256} textAnchor="middle" fontSize="24" fill="#1d1d1f" fontWeight="700">{gw1Qty}</text>
+              <text x={162} y={274} textAnchor="middle" fontSize="11" fill="#86868b">distributie pe 3 etaje</text>
+              <text x={162} y={290} textAnchor="middle" fontSize="11" fill="#aeaeb2">Ramas: {remainInClean}</text>
+              {allocatedTotal > gw1Qty && (
+                <text x={162} y={304} textAnchor="middle" fontSize="11" fill="#ff3b30" fontWeight="600">SUPRA-ALOCAT</text>
+              )}
+
+              {/* Floor Sections */}
+              {ETAJE.map((floor, i) => {
+                const py = [100, 260, 420][i];
+                const stock = floorStock[i];
+                const floorTotal = TIPURI_LENJERIE.reduce((a, lt) => a + stock[lt.id], 0);
+                return (
+                  <g key={floor.id}>
+                    <rect x={388} y={py - 57} width={143} height={114} rx={14} fill="#fff" stroke="#5856d6" strokeWidth={1.2} filter="url(#softShadow)" />
+                    <text x={460} y={py - 34} textAnchor="middle" fontSize="14" fill="#5856d6" fontWeight="700">{floor.name}</text>
+                    <text x={460} y={py - 14} textAnchor="middle" fontSize="12" fill="#aeaeb2">
+                      Sal. {floor.rooms.join(", ")}
+                    </text>
+                    <text x={460} y={py + 14} textAnchor="middle" fontSize="24" fill="#1d1d1f" fontWeight="700">
+                      {floorAlloc[i]}
+                    </text>
+                    <text x={460} y={py + 38} textAnchor="middle" fontSize="12" fill="#86868b">
+                      stoc: {floorTotal}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* GW2 */}
+              <rect x={570} y={220} width={60} height={80} rx={12} fill="#fff" stroke="#ff3b30" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={600} y={242} textAnchor="middle" fontSize="13" fill="#ff3b30" fontWeight="700">GW2</text>
+              <text x={600} y={256} textAnchor="middle" fontSize="10" fill="#86868b">RFID</text>
+              <text x={600} y={278} textAnchor="middle" fontSize="18" fill="#ff3b30" fontWeight="700">{gw2Qty}</text>
+              <text x={600} y={293} textAnchor="middle" fontSize="10" fill="#aeaeb2" fontWeight="500">Σ ETAJE</text>
+              <circle cx={565} cy={237} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" repeatCount="indefinite" /></circle>
+              <circle cx={565} cy={277} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.5s" repeatCount="indefinite" /></circle>
+              <circle cx={635} cy={237} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="1s" repeatCount="indefinite" /></circle>
+              <circle cx={635} cy={277} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
+
+              {/* Camera Murdara */}
+              <rect x={700} y={205} width={140} height={115} rx={14} fill="#fff" stroke="#ff9500" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={770} y={225} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="700">Camera Murdara</text>
+              <text x={770} y={250} textAnchor="middle" fontSize="22" fill="#1d1d1f" fontWeight="700">{totalDirty}</text>
+              <text x={770} y={268} textAnchor="middle" fontSize="11" fill="#86868b">articole (de la GW2: {gw2Qty})</text>
+              <rect x={710} y={278} width={120} height={18} rx={4} fill="rgba(175,82,222,0.08)" />
+              <text x={770} y={292} textAnchor="middle" fontSize="11" fill="#af52de" fontWeight="600">Ridicare @ {pickupTime}</text>
+              <text x={770} y={312} textAnchor="middle" fontSize="10" fill="#aeaeb2">Tot la Spalatorie</text>
+
+              {/* Firma Spalatorie */}
+              <rect x={835} y={60} width={80} height={120} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={875} y={85} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
+              <text x={875} y={101} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
+              <text x={875} y={128} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
+              <text x={875} y={144} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
+              <rect x={840} y={152} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
+              <text x={875} y={165} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
+
+              {/* Particles */}
+              {particles.map((p) => {
+                const elapsed = Date.now() - p.start;
+                const progress = Math.min(elapsed / p.duration, 1);
+                return <Particle key={p.id} from={p.from} to={p.to} color={p.color} progress={progress} label={p.label} />;
+              })}
+
+              {/* Legend */}
+              <g opacity={0.7}>
+                <text x={100} y={478} fontSize="12" fill="#86868b" fontWeight="500">Legenda:</text>
+                <line x1={165} y1={475} x2={190} y2={475} stroke="#34c759" strokeWidth={3} />
+                <text x={195} y={478} fontSize="11" fill="#6e6e73">Flux curat</text>
+                <line x1={265} y1={475} x2={290} y2={475} stroke="#ff3b30" strokeWidth={3} />
+                <text x={295} y={478} fontSize="11" fill="#6e6e73">Colectare murdar</text>
+                <line x1={410} y1={475} x2={435} y2={475} stroke="#af52de" strokeWidth={3} />
+                <text x={440} y={478} fontSize="11" fill="#6e6e73">La firma</text>
+                <line x1={500} y1={475} x2={525} y2={475} stroke="#0071e3" strokeWidth={3} strokeDasharray="6,3" />
+                <text x={530} y={478} fontSize="11" fill="#6e6e73">Returnare</text>
+                <circle cx={600} cy={475} r={3.5} fill="#0071e3"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite" /></circle>
+                <text x={610} y={478} fontSize="11" fill="#6e6e73">Antena RFID</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* === OPERATIUNI DETALIATE === */}
+      {selectedView === "manage" && (
+        <div style={card}>
+          <h3 style={{ margin: "0 0 16px", color: "#1d1d1f", fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>Operatiuni detaliate</h3>
+
+          <div style={{ marginBottom: 24 }}>
+            <h4 style={{ color: "#34c759", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Adauga stoc in Camera Curata</h4>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {TIPURI_LENJERIE.map((lt) => (
+                <div key={lt.id} style={{
+                  background: "rgba(52,199,89,0.04)", borderRadius: 12, padding: "10px 14px",
+                  display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(52,199,89,0.12)",
+                }}>
+                  <span style={{ fontSize: 14 }}>{lt.icon} {lt.label}</span>
+                  <button onClick={() => setCleanRoom((p) => ({ ...p, [lt.id]: Math.max(0, p[lt.id] - 10) }))}
+                    style={btnSmall("#c7c7cc")}>-10</button>
+                  <span style={{ minWidth: 30, textAlign: "center", fontWeight: 700, color: "#1d1d1f" }}>{cleanRoom[lt.id]}</span>
+                  <button onClick={() => setCleanRoom((p) => ({ ...p, [lt.id]: p[lt.id] + 10 }))}
+                    style={btnSmall("#34c759")}>+10</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <h4 style={{ color: "#5856d6", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Distribuie Curat → Etaje</h4>
+            {ETAJE.map((floor, fi) => (
+              <div key={floor.id} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 6, fontWeight: 500 }}>{floor.name}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {TIPURI_LENJERIE.map((lt) => (
+                    <button key={lt.id} onClick={() => distributeToFloor(fi, lt.id, 5)}
+                      style={{
+                        background: "#f5f5f7", color: "#5856d6", border: "1px solid rgba(88,86,214,0.2)",
+                        borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13,
+                        fontFamily: font, fontWeight: 500, transition: "all 0.15s",
+                      }}>
+                      {lt.icon} +5
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <h4 style={{ color: "#ff9500", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Colecteaza murdar ← Etaje (prin GW2)</h4>
+            {ETAJE.map((floor, fi) => (
+              <div key={floor.id} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 6, fontWeight: 500 }}>{floor.name}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {TIPURI_LENJERIE.map((lt) => (
+                    <button key={lt.id} onClick={() => collectFromFloor(fi, lt.id, 3)}
+                      style={{
+                        background: "#f5f5f7", color: "#ff9500", border: "1px solid rgba(255,149,0,0.2)",
+                        borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13,
+                        fontFamily: font, fontWeight: 500, transition: "all 0.15s",
+                      }}>
+                      {lt.icon} -3
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div>
+              <h4 style={{ color: "#af52de", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Trimite murdar → Spalatorie</h4>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {TIPURI_LENJERIE.map((lt) => (
+                  <button key={lt.id} onClick={() => sendToCleaning(lt.id, 5)}
+                    style={{
+                      background: "rgba(175,82,222,0.06)", color: "#af52de", border: "1px solid rgba(175,82,222,0.2)",
+                      borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13,
+                      fontFamily: font, fontWeight: 500,
+                    }}>
+                    {lt.icon} Trimite 5
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 style={{ color: "#0071e3", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Primeste curat ← Spalatorie</h4>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {TIPURI_LENJERIE.map((lt) => (
+                  <button key={lt.id} onClick={() => returnFromCleaning(lt.id, 5)}
+                    style={{
+                      background: "rgba(0,113,227,0.06)", color: "#0071e3", border: "1px solid rgba(0,113,227,0.2)",
+                      borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13,
+                      fontFamily: font, fontWeight: 500,
+                    }}>
+                    {lt.icon} Primeste 5
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* === INVENTAR === */}
+      {selectedView === "inventory" && (
+        <div style={card}>
+          <h3 style={{ margin: "0 0 16px", color: "#1d1d1f", fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>Inventar complet</h3>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 15 }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #e8e8ed" }}>
+                  <th style={{ textAlign: "left", padding: "12px 14px", color: "#86868b", fontWeight: 500, fontSize: 14 }}>Locatie</th>
+                  {TIPURI_LENJERIE.map((lt) => (
+                    <th key={lt.id} style={{ textAlign: "center", padding: "12px 14px", color: lt.color, fontWeight: 600, fontSize: 14 }}>{lt.icon} {lt.label}</th>
+                  ))}
+                  <th style={{ textAlign: "center", padding: "12px 14px", color: "#1d1d1f", fontWeight: 600, fontSize: 14 }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(0,113,227,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#0071e3" }}>Poarta 1 (intrare)</td>
+                  <td colSpan={4} style={{ textAlign: "center", padding: 10, fontSize: 16, fontWeight: 700, color: "#0071e3" }}>{gw1Qty}</td>
+                  <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{gw1Qty}</td>
+                </tr>
+                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(52,199,89,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#34c759" }}>Camera Curata</td>
+                  {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{cleanRoom[lt.id]}</td>)}
+                  <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{totalClean}</td>
+                </tr>
+                {ETAJE.map((floor, i) => {
+                  const stock = floorStock[i];
+                  const ft = TIPURI_LENJERIE.reduce((a, lt) => a + stock[lt.id], 0);
+                  return (
+                    <tr key={floor.id} style={{ borderBottom: "1px solid #f0f0f5" }}>
+                      <td style={{ padding: "10px 12px", color: "#5856d6", fontWeight: 500 }}>{floor.name} (alocat: {floorAlloc[i]})</td>
+                      {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{stock[lt.id]}</td>)}
+                      <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{ft}</td>
+                    </tr>
+                  );
+                })}
+                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(255,59,48,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#ff3b30" }}>Poarta 2 (Σ etaje)</td>
+                  <td colSpan={4} style={{ textAlign: "center", padding: 10, fontSize: 16, fontWeight: 700, color: "#ff3b30" }}>{gw2Qty}</td>
+                  <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{gw2Qty}</td>
+                </tr>
+                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(255,149,0,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#ff9500" }}>Camera Murdara</td>
+                  {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{dirtyRoom[lt.id]}</td>)}
+                  <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{totalDirty}</td>
+                </tr>
+                <tr style={{ background: "rgba(175,82,222,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#af52de" }}>Firma Spalatorie</td>
+                  {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{externalCleaning[lt.id]}</td>)}
+                  <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{totalExternal}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* === JURNAL EVENIMENTE === */}
+      {selectedView === "log" && (
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ margin: 0, color: "#1d1d1f", fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>Jurnal evenimente RFID</h3>
+            <button onClick={() => setLog([])}
+              style={{
+                background: "#f5f5f7", color: "#86868b", border: "1px solid #d2d2d7",
+                borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 14,
+                fontFamily: font, fontWeight: 500,
+              }}>
+              Sterge
+            </button>
+          </div>
+          <div style={{
+            maxHeight: 380, overflowY: "auto",
+            fontFamily: "'SF Mono', 'Fira Code', 'Menlo', monospace", fontSize: 14,
+          }}>
+            {log.length === 0 && <p style={{ color: "#aeaeb2", fontFamily: font }}>Niciun eveniment inca. Porneste simularea sau foloseste comenzile manuale.</p>}
+            {log.map((entry, i) => (
+              <div key={i} style={{
+                padding: "6px 0", borderBottom: "1px solid #f0f0f5", color: "#1d1d1f",
+              }}>
+                <span style={{ color: "#aeaeb2" }}>[{entry.ts}]</span> {entry.msg}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Footer note */}
+      <div style={{
+        marginTop: 20, padding: 16,
+        background: "#fff", borderRadius: 14, fontSize: 14, color: "#86868b", lineHeight: 1.7,
+        border: "1px solid rgba(0,0,0,0.04)",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+      }}>
+        <strong style={{ color: "#6e6e73" }}>Arhitectura sistem:</strong>{" "}
+        <span style={{ color: "#0071e3" }}>Poarta 1</span> are o cantitate de intrare editabila.
+        Alocati manual articolele pe fiecare etaj.{" "}
+        <span style={{ color: "#ff3b30" }}>Poarta 2</span> se calculeaza automat ca Σ(Etaj 1 + 2 + 3).{" "}
+        <strong style={{ color: "#af52de" }}>Program:</strong> Toata lenjeria murdara este ridicata la ora{" "}
+        <span style={{ color: "#af52de", fontWeight: 600 }}>{pickupTime}</span> si returnata curata la ora{" "}
+        <span style={{ color: "#0071e3", fontWeight: 600 }}>{returnTime}</span>.
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(HospitalLinenSimulator));
+  </script>
+</body>
+</html>
