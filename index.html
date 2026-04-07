@@ -419,8 +419,9 @@ function HospitalLinenSimulator() {
 
       {/* === FLUX & COMENZI === */}
       {selectedView === "flow" && (
-        <div style={{ ...card, padding: "20px 20px 0 20px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "200px 200px 200px 200px 200px", gap: 14, marginBottom: 20, alignItems: "start", maxHeight: "20vh", overflowY: "auto" }}>
+        <div style={{ ...card, padding: 14, display: "flex", gap: 14 }}>
+          {/* Left: Controls */}
+          <div style={{ display: "grid", gridTemplateColumns: "200px 200px 200px", gap: 10, alignItems: "start", flexShrink: 0 }}>
 
             {/* GW1 */}
             <div style={{
@@ -442,22 +443,6 @@ function HospitalLinenSimulator() {
                   Supra-alocat cu {allocatedTotal - gw1Qty}
                 </div>
               )}
-            </div>
-
-            {/* Camera Curata */}
-            <div style={{
-              background: "rgba(52,199,89,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(52,199,89,0.15)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Camera Curata</div>
-              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Primeste de la GW1</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: "#34c759", letterSpacing: "-0.03em" }}>{gw1Qty}</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginTop: 6 }}>
-                Stoc detaliat: {totalClean} articole
-              </div>
-              <div style={{ fontSize: 12, color: "#86868b", marginTop: 4, lineHeight: 1.6 }}>
-                {TIPURI_LENJERIE.map((lt) => `${lt.icon} ${cleanRoom[lt.id]}`).join("   ")}
-              </div>
             </div>
 
             {/* Alocare pe etaje */}
@@ -500,7 +485,26 @@ function HospitalLinenSimulator() {
               </div>
             </div>
 
-            {/* Camera Murdara + Program */}
+            {/* Camera Curata — sub Poarta 1 */}
+            <div style={{
+              background: "rgba(52,199,89,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(52,199,89,0.15)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Camera Curata</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Primeste de la GW1</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#34c759", letterSpacing: "-0.03em" }}>{gw1Qty}</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginTop: 6 }}>
+                Stoc detaliat: {totalClean} articole
+              </div>
+              <div style={{ fontSize: 12, color: "#86868b", marginTop: 4, lineHeight: 1.6 }}>
+                {TIPURI_LENJERIE.map((lt) => `${lt.icon} ${cleanRoom[lt.id]}`).join("   ")}
+              </div>
+            </div>
+
+            {/* Spatiu gol sub Alocare */}
+            <div />
+
+            {/* Camera Murdara — sub Poarta 2 */}
             <div style={{
               background: "rgba(255,149,0,0.04)", borderRadius: 14, padding: 14,
               border: "1px solid rgba(255,149,0,0.12)",
@@ -551,9 +555,9 @@ function HospitalLinenSimulator() {
             </div>
           </div>
 
-          {/* SVG Diagram */}
-          <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", margin: "0 -20px -20px -20px", borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
-            <svg viewBox="0 0 920 540" style={{ width: "100%", maxHeight: 340 }}>
+          {/* Right: SVG Diagram */}
+          <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", flex: 1, minWidth: 0 }}>
+            <svg viewBox="0 0 920 540" style={{ width: "100%", height: "100%" }}>
               <defs>
                 <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
