@@ -558,16 +558,16 @@ function HospitalLinenSimulator() {
           <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", flex: 1.1, minWidth: 0 }}>
             <svg viewBox="0 0 920 540" style={{ width: "100%", maxHeight: 500 }}>
               <defs>
-                <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
                 </marker>
-                <marker id="arrow-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff3b30" />
                 </marker>
-                <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#af52de" />
                 </marker>
-                <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#0071e3" />
                 </marker>
                 <filter id="softShadow" x="-10%" y="-10%" width="120%" height="130%">
@@ -600,12 +600,12 @@ function HospitalLinenSimulator() {
               <text x={545} y={252} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[1]}</text>
               <text x={555} y={355} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[2]}</text>
 
-              <line x1={630} y1={260} x2={720} y2={260} stroke="#ff3b30" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
-              <line x1={840} y1={260} x2={848} y2={260} stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-purple)" opacity={0.5} />
-              <text x={845} y={250} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
+              <line x1={630} y1={260} x2={690} y2={260} stroke="#ff3b30" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
+              <line x1={810} y1={260} x2={818} y2={260} stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-purple)" opacity={0.5} />
+              <text x={815} y={250} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
 
               {/* Return path */}
-              <path d="M 890 320 L 910 320 L 910 510 L 15 510 L 15 290 L 15 260 L 20 260"
+              <path d="M 860 320 L 880 320 L 880 510 L 15 510 L 15 290 L 15 260 L 20 260"
                 stroke="#0071e3" strokeWidth={4} strokeDasharray="10,5" fill="none" markerEnd="url(#arrow-blue)" opacity={0.4} />
               <text x={460} y={527} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="500" opacity={0.7}>
                 Returnare @ {returnTime} — Lenjerie curata inapoi prin GW1
@@ -666,22 +666,22 @@ function HospitalLinenSimulator() {
               <circle cx={635} cy={277} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
 
               {/* Camera Murdara */}
-              <rect x={700} y={205} width={140} height={115} rx={14} fill="#fff" stroke="#ff9500" strokeWidth={1.5} filter="url(#softShadow)" />
-              <text x={770} y={225} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="700">Camera Murdara</text>
-              <text x={770} y={250} textAnchor="middle" fontSize="22" fill="#1d1d1f" fontWeight="700">{totalDirty}</text>
-              <text x={770} y={268} textAnchor="middle" fontSize="11" fill="#86868b">articole (de la GW2: {gw2Qty})</text>
-              <rect x={710} y={278} width={120} height={18} rx={4} fill="rgba(175,82,222,0.08)" />
-              <text x={770} y={292} textAnchor="middle" fontSize="11" fill="#af52de" fontWeight="600">Ridicare @ {pickupTime}</text>
-              <text x={770} y={312} textAnchor="middle" fontSize="10" fill="#aeaeb2">Tot la Spalatorie</text>
+              <rect x={670} y={205} width={140} height={115} rx={14} fill="#fff" stroke="#ff9500" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={740} y={225} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="700">Camera Murdara</text>
+              <text x={740} y={250} textAnchor="middle" fontSize="22" fill="#1d1d1f" fontWeight="700">{totalDirty}</text>
+              <text x={740} y={268} textAnchor="middle" fontSize="11" fill="#86868b">articole (de la GW2: {gw2Qty})</text>
+              <rect x={680} y={278} width={120} height={18} rx={4} fill="rgba(175,82,222,0.08)" />
+              <text x={740} y={292} textAnchor="middle" fontSize="11" fill="#af52de" fontWeight="600">Ridicare @ {pickupTime}</text>
+              <text x={740} y={312} textAnchor="middle" fontSize="10" fill="#aeaeb2">Tot la Spalatorie</text>
 
               {/* Firma Spalatorie */}
-              <rect x={850} y={205} width={80} height={115} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
-              <text x={890} y={228} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
-              <text x={890} y={244} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
-              <text x={890} y={271} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
-              <text x={890} y={287} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
-              <rect x={855} y={295} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
-              <text x={890} y={308} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
+              <rect x={820} y={205} width={80} height={115} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={860} y={228} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
+              <text x={860} y={244} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
+              <text x={860} y={271} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
+              <text x={860} y={287} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
+              <rect x={825} y={295} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
+              <text x={860} y={308} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
 
               {/* Particles */}
               {particles.map((p) => {
