@@ -180,7 +180,7 @@ function HospitalLinenSimulator() {
       if (dirtyRoom[linenType] < qty) return;
       setDirtyRoom((prev) => ({ ...prev, [linenType]: prev[linenType] - qty }));
       setExternalCleaning((prev) => ({ ...prev, [linenType]: prev[linenType] + qty }));
-      spawnParticle(positions.dirtyRoom, { x: 890, y: 260 }, "#af52de", `${qty}`, 1200);
+      spawnParticle(positions.dirtyRoom, { x: 870, y: 140 }, "#af52de", `${qty}`, 1200);
       addLog(`Trimis ${qty} ${linenType} la firma de spalatorie`);
     },
     [dirtyRoom, addLog, spawnParticle]
@@ -212,7 +212,7 @@ function HospitalLinenSimulator() {
     setDirtyRoom({ bedsheet: 0, towel: 0, gown: 0, blanket: 0 });
     setLastPickup(new Date().toLocaleTimeString());
     for (let i = 0; i < Math.min(total, 8); i++) {
-      setTimeout(() => spawnParticle(positions.dirtyRoom, { x: 890, y: 260 }, "#af52de", i === 0 ? `${total}` : "", 1200), i * 150);
+      setTimeout(() => spawnParticle(positions.dirtyRoom, { x: 870, y: 140 }, "#af52de", i === 0 ? `${total}` : "", 1200), i * 150);
     }
     addLog(`RIDICARE PROGRAMATA @ ${pickupTime} — Trimis TOATE cele ${total} articole murdare la spalatorie`);
     const breakdown = TIPURI_LENJERIE.map((lt) => `${lt.icon}${snapshot[lt.id]}`).join(" ");
@@ -286,8 +286,8 @@ function HospitalLinenSimulator() {
 
   const cardSmall = (accent) => ({
     background: "#fff",
-    borderRadius: 10,
-    padding: "6px 10px",
+    borderRadius: 14,
+    padding: "10px 16px",
     boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
     border: "1px solid rgba(0,0,0,0.06)",
     position: "relative",
@@ -333,20 +333,19 @@ function HospitalLinenSimulator() {
       background: "#f5f5f7",
       color: "#1d1d1f",
       minHeight: "100vh",
-      width: "100%",
-      padding: "12px 16px",
+      padding: "24px 16px",
       WebkitFontSmoothing: "antialiased",
     }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
         <div>
           <h1 style={{
-            margin: 0, fontSize: 22, fontWeight: 700, color: "#1d1d1f",
+            margin: 0, fontSize: 34, fontWeight: 700, color: "#1d1d1f",
             letterSpacing: "-0.025em", lineHeight: 1.15,
           }}>
             Simulator Gestionare Lenjerie
           </h1>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#86868b", fontWeight: 400, letterSpacing: "-0.01em" }}>
+          <p style={{ margin: "8px 0 0", fontSize: 16, color: "#86868b", fontWeight: 400, letterSpacing: "-0.01em" }}>
             Flux RFID — Poarta 1 → Camera Curata → Etaje → Poarta 2 (suma auto) → Camera Murdara → Firma Spalatorie
           </p>
         </div>
@@ -357,18 +356,18 @@ function HospitalLinenSimulator() {
           >
             {simRunning ? "Opreste" : "Porneste"} Simularea
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", borderRadius: 8, padding: "4px 10px", border: "1px solid #d2d2d7" }}>
-            <span style={{ fontSize: 12, color: "#86868b", fontWeight: 500 }}>Viteza</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", borderRadius: 10, padding: "6px 14px", border: "1px solid #d2d2d7" }}>
+            <span style={{ fontSize: 14, color: "#86868b", fontWeight: 500 }}>Viteza</span>
             <input type="range" min={0.5} max={4} step={0.5} value={simSpeed} onChange={(e) => setSimSpeed(Number(e.target.value))}
               style={{ width: 72, accentColor: "#0071e3" }}
             />
-            <span style={{ fontSize: 12, color: "#1d1d1f", fontWeight: 600, minWidth: 24 }}>{simSpeed}×</span>
+            <span style={{ fontSize: 14, color: "#1d1d1f", fontWeight: 600, minWidth: 28 }}>{simSpeed}×</span>
           </div>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 6, marginBottom: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
           { label: "GW1 Intrare", value: gw1Qty, color: "#0071e3", bg: "rgba(0,113,227,0.06)" },
           { label: "Camera Curata", value: totalClean, color: "#34c759", bg: "rgba(52,199,89,0.06)" },
@@ -384,16 +383,16 @@ function HospitalLinenSimulator() {
             background: kpi.bg,
             borderColor: "transparent",
           }}>
-            <div style={{ fontSize: 11, color: "#86868b", fontWeight: 500, marginBottom: 2, letterSpacing: "-0.01em" }}>{kpi.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: kpi.color, letterSpacing: "-0.03em" }}>{kpi.value}</div>
+            <div style={{ fontSize: 14, color: "#86868b", fontWeight: 500, marginBottom: 6, letterSpacing: "-0.01em" }}>{kpi.label}</div>
+            <div style={{ fontSize: 30, fontWeight: 700, color: kpi.color, letterSpacing: "-0.03em" }}>{kpi.value}</div>
           </div>
         ))}
       </div>
 
       {/* Tab Navigation */}
       <div style={{
-        display: "flex", gap: 2, marginBottom: 8,
-        background: "#e8e8ed", borderRadius: 7, padding: 2, width: "fit-content",
+        display: "flex", gap: 2, marginBottom: 16,
+        background: "#e8e8ed", borderRadius: 10, padding: 3, width: "fit-content",
       }}>
         {[
           { id: "flow", label: "Flux & Comenzi" },
@@ -405,8 +404,8 @@ function HospitalLinenSimulator() {
             key={tab.id}
             onClick={() => setSelectedView(tab.id)}
             style={{
-              padding: "5px 16px", borderRadius: 6, border: "none", cursor: "pointer",
-              fontSize: 12, fontWeight: 500, fontFamily: font, transition: "all 0.2s",
+              padding: "10px 24px", borderRadius: 8, border: "none", cursor: "pointer",
+              fontSize: 15, fontWeight: 500, fontFamily: font, transition: "all 0.2s",
               letterSpacing: "-0.01em",
               background: selectedView === tab.id ? "#fff" : "transparent",
               color: selectedView === tab.id ? "#1d1d1f" : "#86868b",
@@ -420,11 +419,32 @@ function HospitalLinenSimulator() {
 
       {/* === FLUX & COMENZI === */}
       {selectedView === "flow" && (
-        <div style={{ ...card, padding: 14, display: "flex", gap: 14, width: "100%", boxSizing: "border-box" }}>
-          {/* Left: Controls */}
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(150px, 200px) minmax(150px, 200px) minmax(150px, 200px)", gap: 10, alignItems: "start", flexShrink: 1 }}>
+        <div style={{ ...card, padding: "20px 20px 0 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 14, marginBottom: 20, alignItems: "start" }}>
 
-            {/* Camera Curata — deasupra Poarta 1 */}
+            {/* GW1 */}
+            <div style={{
+              background: "rgba(0,113,227,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(0,113,227,0.15)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0071e3", marginBottom: 6 }}>Poarta 1</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Intrare</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 6 }}>Cantitate intrare:</div>
+              <StepperInput value={gw1Qty} onChange={setGw1Qty} step={50} accentColor="#0071e3" width={70} />
+              <div style={{ fontSize: 13, color: "#86868b", marginTop: 8 }}>
+                Alocat: {allocatedTotal} · Ramas: {remainInClean}
+              </div>
+              {allocatedTotal > gw1Qty && (
+                <div style={{
+                  fontSize: 13, color: "#ff3b30", marginTop: 6, fontWeight: 600,
+                  background: "rgba(255,59,48,0.08)", borderRadius: 6, padding: "4px 8px",
+                }}>
+                  Supra-alocat cu {allocatedTotal - gw1Qty}
+                </div>
+              )}
+            </div>
+
+            {/* Camera Curata */}
             <div style={{
               background: "rgba(52,199,89,0.04)", borderRadius: 14, padding: 14,
               border: "1px solid rgba(52,199,89,0.15)",
@@ -440,10 +460,47 @@ function HospitalLinenSimulator() {
               </div>
             </div>
 
-            {/* Spatiu gol deasupra Alocare */}
-            <div />
+            {/* Alocare pe etaje */}
+            <div style={{
+              background: "rgba(88,86,214,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(88,86,214,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
+              {ETAJE.map((floor, i) => (
+                <div key={floor.id} style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] - 10)} style={btnSmall("#86868b")}>−</button>
+                    <input
+                      type="number"
+                      value={floorAlloc[i]}
+                      onChange={(e) => setFloorAllocAt(i, parseInt(e.target.value) || 0)}
+                      style={inputStyle()}
+                    />
+                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] + 10)} style={btnSmall("#5856d6")}>+</button>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 3 }}>
+                    Saloane: {floor.rooms.join(", ")}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            {/* Camera Murdara — deasupra Poarta 2 */}
+            {/* GW2 — Suma automata */}
+            <div style={{
+              background: "rgba(255,59,48,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(255,59,48,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff3b30", marginBottom: 6 }}>Poarta 2</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Iesire</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 4 }}>Calcul automat (Σ Etaje):</div>
+              <div style={{ fontSize: 36, fontWeight: 700, color: "#ff3b30", letterSpacing: "-0.04em" }}>{gw2Qty}</div>
+              <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 6 }}>
+                = {floorAlloc.map((v, i) => `E${i + 1}:${v}`).join(" + ")}
+              </div>
+            </div>
+
+            {/* Camera Murdara + Program */}
             <div style={{
               background: "rgba(255,149,0,0.04)", borderRadius: 14, padding: 14,
               border: "1px solid rgba(255,149,0,0.12)",
@@ -492,73 +549,11 @@ function HospitalLinenSimulator() {
                 <div style={{ fontSize: 13, color: "#af52de", marginTop: 8, fontWeight: 500 }}>La firma: {totalExternal} art.</div>
               </div>
             </div>
-
-            {/* GW1 */}
-            <div style={{
-              background: "rgba(0,113,227,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(0,113,227,0.15)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#0071e3", marginBottom: 6 }}>Poarta 1</div>
-              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Intrare</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 6 }}>Cantitate intrare:</div>
-              <StepperInput value={gw1Qty} onChange={setGw1Qty} step={50} accentColor="#0071e3" width={70} />
-              <div style={{ fontSize: 13, color: "#86868b", marginTop: 8 }}>
-                Alocat: {allocatedTotal} · Ramas: {remainInClean}
-              </div>
-              {allocatedTotal > gw1Qty && (
-                <div style={{
-                  fontSize: 13, color: "#ff3b30", marginTop: 6, fontWeight: 600,
-                  background: "rgba(255,59,48,0.08)", borderRadius: 6, padding: "4px 8px",
-                }}>
-                  Supra-alocat cu {allocatedTotal - gw1Qty}
-                </div>
-              )}
-            </div>
-
-            {/* Alocare pe etaje */}
-            <div style={{
-              background: "rgba(88,86,214,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(88,86,214,0.12)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
-              {ETAJE.map((floor, i) => (
-                <div key={floor.id} style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] - 10)} style={btnSmall("#86868b")}>−</button>
-                    <input
-                      type="number"
-                      value={floorAlloc[i]}
-                      onChange={(e) => setFloorAllocAt(i, parseInt(e.target.value) || 0)}
-                      style={inputStyle()}
-                    />
-                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] + 10)} style={btnSmall("#5856d6")}>+</button>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 3 }}>
-                    Saloane: {floor.rooms.join(", ")}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* GW2 — Suma automata */}
-            <div style={{
-              background: "rgba(255,59,48,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(255,59,48,0.12)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff3b30", marginBottom: 6 }}>Poarta 2</div>
-              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Iesire</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 4 }}>Calcul automat (Σ Etaje):</div>
-              <div style={{ fontSize: 36, fontWeight: 700, color: "#ff3b30", letterSpacing: "-0.04em" }}>{gw2Qty}</div>
-              <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 6 }}>
-                = {floorAlloc.map((v, i) => `E${i + 1}:${v}`).join(" + ")}
-              </div>
-            </div>
           </div>
 
-          {/* Right: SVG Diagram */}
-          <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", flex: 1.1, minWidth: 0 }}>
-            <svg viewBox="0 0 920 540" style={{ width: "100%", maxHeight: 500 }}>
+          {/* SVG Diagram */}
+          <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", margin: "0 -20px -20px -20px", borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+            <svg viewBox="0 0 920 540" style={{ width: "100%", maxHeight: 340 }}>
               <defs>
                 <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
@@ -603,11 +598,11 @@ function HospitalLinenSimulator() {
               <text x={555} y={355} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[2]}</text>
 
               <line x1={630} y1={260} x2={720} y2={260} stroke="#ff3b30" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
-              <line x1={840} y1={260} x2={848} y2={260} stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-purple)" opacity={0.5} />
-              <text x={845} y={250} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
+              <path d="M 840 260 L 875 260 L 875 180" stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" fill="none" markerEnd="url(#arrow-purple)" opacity={0.5} />
+              <text x={882} y={220} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
 
               {/* Return path */}
-              <path d="M 890 320 L 910 320 L 910 510 L 15 510 L 15 290 L 15 260 L 20 260"
+              <path d="M 875 180 L 900 180 L 900 510 L 15 510 L 15 290 L 15 260 L 20 260"
                 stroke="#0071e3" strokeWidth={4} strokeDasharray="10,5" fill="none" markerEnd="url(#arrow-blue)" opacity={0.4} />
               <text x={460} y={527} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="500" opacity={0.7}>
                 Returnare @ {returnTime} — Lenjerie curata inapoi prin GW1
@@ -677,13 +672,13 @@ function HospitalLinenSimulator() {
               <text x={770} y={312} textAnchor="middle" fontSize="10" fill="#aeaeb2">Tot la Spalatorie</text>
 
               {/* Firma Spalatorie */}
-              <rect x={850} y={205} width={80} height={115} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
-              <text x={890} y={228} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
-              <text x={890} y={244} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
-              <text x={890} y={271} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
-              <text x={890} y={287} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
-              <rect x={855} y={295} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
-              <text x={890} y={308} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
+              <rect x={835} y={60} width={80} height={120} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={875} y={85} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
+              <text x={875} y={101} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
+              <text x={875} y={128} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
+              <text x={875} y={144} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
+              <rect x={840} y={152} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
+              <text x={875} y={165} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
 
               {/* Particles */}
               {particles.map((p) => {

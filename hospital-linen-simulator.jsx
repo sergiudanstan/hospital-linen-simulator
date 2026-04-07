@@ -533,7 +533,7 @@ export default function HospitalLinenSimulator() {
 
           {/* SVG Diagram */}
           <div style={{ background: "#fafafa", borderRadius: 14, padding: 16, border: "1px solid rgba(0,0,0,0.04)", margin: "0 -20px -20px -20px", borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
-            <svg viewBox="0 0 920 540" style={{ width: "100%", height: "auto" }}>
+            <svg viewBox="0 0 920 540" style={{ width: "auto", height: "auto" }}>
               <defs>
                 <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
