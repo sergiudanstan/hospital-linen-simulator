@@ -423,6 +423,75 @@ function HospitalLinenSimulator() {
           {/* Left: Controls */}
           <div style={{ display: "grid", gridTemplateColumns: "200px 200px 200px", gap: 10, alignItems: "start", flexShrink: 0 }}>
 
+            {/* Camera Curata — deasupra Poarta 1 */}
+            <div style={{
+              background: "rgba(52,199,89,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(52,199,89,0.15)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Camera Curata</div>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Primeste de la GW1</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#34c759", letterSpacing: "-0.03em" }}>{gw1Qty}</div>
+              <div style={{ fontSize: 13, color: "#6e6e73", marginTop: 6 }}>
+                Stoc detaliat: {totalClean} articole
+              </div>
+              <div style={{ fontSize: 12, color: "#86868b", marginTop: 4, lineHeight: 1.6 }}>
+                {TIPURI_LENJERIE.map((lt) => `${lt.icon} ${cleanRoom[lt.id]}`).join("   ")}
+              </div>
+            </div>
+
+            {/* Spatiu gol deasupra Alocare */}
+            <div />
+
+            {/* Camera Murdara — deasupra Poarta 2 */}
+            <div style={{
+              background: "rgba(255,149,0,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(255,149,0,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff9500", marginBottom: 4 }}>Camera Murdara</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "#ff9500", letterSpacing: "-0.02em" }}>{totalDirty} art.</div>
+
+              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#af52de", marginBottom: 6 }}>Ridicare → Spalatorie</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
+                  <input
+                    type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)}
+                    style={{
+                      background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7",
+                      borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: font,
+                    }}
+                  />
+                </div>
+                <button onClick={sendAllDirtyToCompany} style={{
+                  ...btnPrimary("#af52de"), width: "100%", fontSize: 13, padding: "8px 10px",
+                }}>
+                  Trimite tot ({totalDirty}) @ {pickupTime}
+                </button>
+                {lastPickup && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastPickup}</div>}
+              </div>
+
+              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#0071e3", marginBottom: 6 }}>Returnare ← Spalatorie</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
+                  <input
+                    type="time" value={returnTime} onChange={(e) => setReturnTime(e.target.value)}
+                    style={{
+                      background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7",
+                      borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: font,
+                    }}
+                  />
+                </div>
+                <button onClick={returnAllFromCompany} style={{
+                  ...btnPrimary("#0071e3"), width: "100%", fontSize: 13, padding: "8px 10px",
+                }}>
+                  Primeste tot ({totalExternal}) @ {returnTime}
+                </button>
+                {lastReturn && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastReturn}</div>}
+                <div style={{ fontSize: 13, color: "#af52de", marginTop: 8, fontWeight: 500 }}>La firma: {totalExternal} art.</div>
+              </div>
+            </div>
+
             {/* GW1 */}
             <div style={{
               background: "rgba(0,113,227,0.04)", borderRadius: 14, padding: 14,
@@ -482,75 +551,6 @@ function HospitalLinenSimulator() {
               <div style={{ fontSize: 36, fontWeight: 700, color: "#ff3b30", letterSpacing: "-0.04em" }}>{gw2Qty}</div>
               <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 6 }}>
                 = {floorAlloc.map((v, i) => `E${i + 1}:${v}`).join(" + ")}
-              </div>
-            </div>
-
-            {/* Camera Curata — sub Poarta 1 */}
-            <div style={{
-              background: "rgba(52,199,89,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(52,199,89,0.15)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Camera Curata</div>
-              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Primeste de la GW1</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: "#34c759", letterSpacing: "-0.03em" }}>{gw1Qty}</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginTop: 6 }}>
-                Stoc detaliat: {totalClean} articole
-              </div>
-              <div style={{ fontSize: 12, color: "#86868b", marginTop: 4, lineHeight: 1.6 }}>
-                {TIPURI_LENJERIE.map((lt) => `${lt.icon} ${cleanRoom[lt.id]}`).join("   ")}
-              </div>
-            </div>
-
-            {/* Spatiu gol sub Alocare */}
-            <div />
-
-            {/* Camera Murdara — sub Poarta 2 */}
-            <div style={{
-              background: "rgba(255,149,0,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(255,149,0,0.12)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff9500", marginBottom: 4 }}>Camera Murdara</div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#ff9500", letterSpacing: "-0.02em" }}>{totalDirty} art.</div>
-
-              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#af52de", marginBottom: 6 }}>Ridicare → Spalatorie</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
-                  <input
-                    type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)}
-                    style={{
-                      background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7",
-                      borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: font,
-                    }}
-                  />
-                </div>
-                <button onClick={sendAllDirtyToCompany} style={{
-                  ...btnPrimary("#af52de"), width: "100%", fontSize: 13, padding: "8px 10px",
-                }}>
-                  Trimite tot ({totalDirty}) @ {pickupTime}
-                </button>
-                {lastPickup && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastPickup}</div>}
-              </div>
-
-              <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#0071e3", marginBottom: 6 }}>Returnare ← Spalatorie</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
-                  <input
-                    type="time" value={returnTime} onChange={(e) => setReturnTime(e.target.value)}
-                    style={{
-                      background: "#f5f5f7", color: "#1d1d1f", border: "1px solid #d2d2d7",
-                      borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: font,
-                    }}
-                  />
-                </div>
-                <button onClick={returnAllFromCompany} style={{
-                  ...btnPrimary("#0071e3"), width: "100%", fontSize: 13, padding: "8px 10px",
-                }}>
-                  Primeste tot ({totalExternal}) @ {returnTime}
-                </button>
-                {lastReturn && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastReturn}</div>}
-                <div style={{ fontSize: 13, color: "#af52de", marginTop: 8, fontWeight: 500 }}>La firma: {totalExternal} art.</div>
               </div>
             </div>
           </div>
