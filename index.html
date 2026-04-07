@@ -444,6 +444,7 @@ function HospitalLinenSimulator() {
             <div style={{
               background: "rgba(88,86,214,0.04)", borderRadius: 14, padding: 14,
               border: "1px solid rgba(88,86,214,0.12)",
+              gridRow: "span 2",
             }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
               {ETAJE.map((floor, i) => (
@@ -537,9 +538,6 @@ function HospitalLinenSimulator() {
                 </div>
               )}
             </div>
-
-            {/* Spatiu gol */}
-            <div />
 
             {/* GW2 — Suma automata */}
             <div style={{
