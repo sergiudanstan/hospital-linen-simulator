@@ -180,7 +180,7 @@ function HospitalLinenSimulator() {
       if (dirtyRoom[linenType] < qty) return;
       setDirtyRoom((prev) => ({ ...prev, [linenType]: prev[linenType] - qty }));
       setExternalCleaning((prev) => ({ ...prev, [linenType]: prev[linenType] + qty }));
-      spawnParticle(positions.dirtyRoom, { x: 870, y: 140 }, "#af52de", `${qty}`, 1200);
+      spawnParticle(positions.dirtyRoom, { x: 890, y: 260 }, "#af52de", `${qty}`, 1200);
       addLog(`Trimis ${qty} ${linenType} la firma de spalatorie`);
     },
     [dirtyRoom, addLog, spawnParticle]
@@ -212,7 +212,7 @@ function HospitalLinenSimulator() {
     setDirtyRoom({ bedsheet: 0, towel: 0, gown: 0, blanket: 0 });
     setLastPickup(new Date().toLocaleTimeString());
     for (let i = 0; i < Math.min(total, 8); i++) {
-      setTimeout(() => spawnParticle(positions.dirtyRoom, { x: 870, y: 140 }, "#af52de", i === 0 ? `${total}` : "", 1200), i * 150);
+      setTimeout(() => spawnParticle(positions.dirtyRoom, { x: 890, y: 260 }, "#af52de", i === 0 ? `${total}` : "", 1200), i * 150);
     }
     addLog(`RIDICARE PROGRAMATA @ ${pickupTime} — Trimis TOATE cele ${total} articole murdare la spalatorie`);
     const breakdown = TIPURI_LENJERIE.map((lt) => `${lt.icon}${snapshot[lt.id]}`).join(" ");
@@ -598,11 +598,11 @@ function HospitalLinenSimulator() {
               <text x={555} y={355} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[2]}</text>
 
               <line x1={630} y1={260} x2={720} y2={260} stroke="#ff3b30" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
-              <path d="M 840 260 L 875 260 L 875 180" stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" fill="none" markerEnd="url(#arrow-purple)" opacity={0.5} />
-              <text x={882} y={220} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
+              <line x1={840} y1={260} x2={848} y2={260} stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-purple)" opacity={0.5} />
+              <text x={845} y={250} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
 
               {/* Return path */}
-              <path d="M 875 180 L 900 180 L 900 510 L 15 510 L 15 290 L 15 260 L 20 260"
+              <path d="M 890 320 L 910 320 L 910 510 L 15 510 L 15 290 L 15 260 L 20 260"
                 stroke="#0071e3" strokeWidth={4} strokeDasharray="10,5" fill="none" markerEnd="url(#arrow-blue)" opacity={0.4} />
               <text x={460} y={527} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="500" opacity={0.7}>
                 Returnare @ {returnTime} — Lenjerie curata inapoi prin GW1
@@ -672,13 +672,13 @@ function HospitalLinenSimulator() {
               <text x={770} y={312} textAnchor="middle" fontSize="10" fill="#aeaeb2">Tot la Spalatorie</text>
 
               {/* Firma Spalatorie */}
-              <rect x={835} y={60} width={80} height={120} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
-              <text x={875} y={85} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
-              <text x={875} y={101} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
-              <text x={875} y={128} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
-              <text x={875} y={144} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
-              <rect x={840} y={152} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
-              <text x={875} y={165} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
+              <rect x={850} y={205} width={80} height={115} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={890} y={228} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Firma</text>
+              <text x={890} y={244} textAnchor="middle" fontSize="13" fill="#af52de" fontWeight="700">Spalatorie</text>
+              <text x={890} y={271} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
+              <text x={890} y={287} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
+              <rect x={855} y={295} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
+              <text x={890} y={308} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
 
               {/* Particles */}
               {particles.map((p) => {
