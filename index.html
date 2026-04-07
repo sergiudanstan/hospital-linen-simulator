@@ -440,8 +440,31 @@ function HospitalLinenSimulator() {
               </div>
             </div>
 
-            {/* Spatiu gol deasupra Alocare */}
-            <div />
+            {/* Alocare pe etaje */}
+            <div style={{
+              background: "rgba(88,86,214,0.04)", borderRadius: 14, padding: 14,
+              border: "1px solid rgba(88,86,214,0.12)",
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
+              {ETAJE.map((floor, i) => (
+                <div key={floor.id} style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] - 10)} style={btnSmall("#86868b")}>−</button>
+                    <input
+                      type="number"
+                      value={floorAlloc[i]}
+                      onChange={(e) => setFloorAllocAt(i, parseInt(e.target.value) || 0)}
+                      style={inputStyle()}
+                    />
+                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] + 10)} style={btnSmall("#5856d6")}>+</button>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 3 }}>
+                    Saloane: {floor.rooms.join(", ")}
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* Camera Murdara — deasupra Poarta 2 */}
             <div style={{
@@ -513,32 +536,6 @@ function HospitalLinenSimulator() {
                   Supra-alocat cu {allocatedTotal - gw1Qty}
                 </div>
               )}
-            </div>
-
-            {/* Alocare pe etaje */}
-            <div style={{
-              background: "rgba(88,86,214,0.04)", borderRadius: 14, padding: 14,
-              border: "1px solid rgba(88,86,214,0.12)",
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
-              {ETAJE.map((floor, i) => (
-                <div key={floor.id} style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] - 10)} style={btnSmall("#86868b")}>−</button>
-                    <input
-                      type="number"
-                      value={floorAlloc[i]}
-                      onChange={(e) => setFloorAllocAt(i, parseInt(e.target.value) || 0)}
-                      style={inputStyle()}
-                    />
-                    <button onClick={() => setFloorAllocAt(i, floorAlloc[i] + 10)} style={btnSmall("#5856d6")}>+</button>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 3 }}>
-                    Saloane: {floor.rooms.join(", ")}
-                  </div>
-                </div>
-              ))}
             </div>
 
             {/* GW2 — Suma automata */}
