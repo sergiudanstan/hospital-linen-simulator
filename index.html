@@ -391,8 +391,8 @@ function HospitalLinenSimulator() {
 
       {/* Tab Navigation */}
       <div style={{
-        display: "flex", gap: 2, marginBottom: 16,
-        background: "#e8e8ed", borderRadius: 10, padding: 3, width: "fit-content",
+        display: "flex", gap: 2, marginBottom: 8,
+        background: "#e8e8ed", borderRadius: 7, padding: 2, width: "fit-content",
       }}>
         {[
           { id: "flow", label: "Flux & Comenzi" },
@@ -404,8 +404,8 @@ function HospitalLinenSimulator() {
             key={tab.id}
             onClick={() => setSelectedView(tab.id)}
             style={{
-              padding: "10px 24px", borderRadius: 8, border: "none", cursor: "pointer",
-              fontSize: 15, fontWeight: 500, fontFamily: font, transition: "all 0.2s",
+              padding: "5px 16px", borderRadius: 6, border: "none", cursor: "pointer",
+              fontSize: 12, fontWeight: 500, fontFamily: font, transition: "all 0.2s",
               letterSpacing: "-0.01em",
               background: selectedView === tab.id ? "#fff" : "transparent",
               color: selectedView === tab.id ? "#1d1d1f" : "#86868b",
