@@ -28,7 +28,7 @@ const ETAJE = [
 ];
 
 const TIPURI_LENJERIE = [
-  { id: "bedsheet", label: "Cearceafuri", color: "#0071e3", icon: "🛏️" },
+  { id: "bedsheet", label: "Cearceafuri", color: "#5856d6", icon: "🛏️" },
   { id: "towel", label: "Prosoape", color: "#34c759", icon: "🧴" },
   { id: "gown", label: "Halate pacient", color: "#af52de", icon: "👔" },
   { id: "blanket", label: "Paturi", color: "#ff9500", icon: "🧣" },
@@ -53,7 +53,7 @@ function Particle({ from, to, color, progress, label }) {
 }
 
 // --- Input cu pas ---
-function StepperInput({ value, onChange, min = 0, max = 9999, step = 10, accentColor = "#0071e3", width = 140 }) {
+function StepperInput({ value, onChange, min = 0, max = 9999, step = 10, accentColor = "#34c759", width = 140 }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
       <button
@@ -166,7 +166,7 @@ function HospitalLinenSimulator() {
       const floorPos = [positions.floor1, positions.floor2, positions.floor3][floorIdx];
       for (let i = 0; i < Math.min(qty, 5); i++) {
         setTimeout(() => {
-          spawnParticle(floorPos, positions.gateway2, "#ff3b30", `${qty}×`, 800);
+          spawnParticle(floorPos, positions.gateway2, "#ff9500", `${qty}×`, 800);
           setTimeout(() => spawnParticle(positions.gateway2, positions.dirtyRoom, "#ff9500", "", 1000), 600);
         }, i * 200);
       }
@@ -353,14 +353,14 @@ function HospitalLinenSimulator() {
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <button
             onClick={() => setSimRunning(!simRunning)}
-            style={btnPrimary(simRunning ? "#ff3b30" : "#34c759")}
+            style={btnPrimary(simRunning ? "#ff9500" : "#34c759")}
           >
             {simRunning ? "Opreste" : "Porneste"} Simularea
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", borderRadius: 8, padding: "4px 10px", border: "1px solid #d2d2d7" }}>
             <span style={{ fontSize: 12, color: "#86868b", fontWeight: 500 }}>Viteza</span>
             <input type="range" min={0.5} max={4} step={0.5} value={simSpeed} onChange={(e) => setSimSpeed(Number(e.target.value))}
-              style={{ width: 72, accentColor: "#0071e3" }}
+              style={{ width: 72, accentColor: "#34c759" }}
             />
             <span style={{ fontSize: 12, color: "#1d1d1f", fontWeight: 600, minWidth: 24 }}>{simSpeed}×</span>
           </div>
@@ -370,11 +370,11 @@ function HospitalLinenSimulator() {
       {/* KPI Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 6, marginBottom: 10 }}>
         {[
-          { label: "GW1 Intrare", value: gw1Qty, color: "#0071e3", bg: "rgba(0,113,227,0.06)" },
+          { label: "GW1 Intrare", value: gw1Qty, color: "#34c759", bg: "rgba(0,113,227,0.06)" },
           { label: "Camera Curata", value: totalClean, color: "#34c759", bg: "rgba(52,199,89,0.06)" },
           { label: "Alocat pe Etaje", value: allocatedTotal, color: "#5856d6", bg: "rgba(88,86,214,0.06)" },
-          { label: "Ramas in Curata", value: remainInClean, color: "#007aff", bg: "rgba(0,122,255,0.06)" },
-          { label: "GW2 (Σ auto)", value: gw2Qty, color: "#ff3b30", bg: "rgba(255,59,48,0.06)" },
+          { label: "Ramas in Curata", value: remainInClean, color: "#34c759", bg: "rgba(0,122,255,0.06)" },
+          { label: "GW2 (Σ auto)", value: gw2Qty, color: "#ff9500", bg: "rgba(255,59,48,0.06)" },
           { label: "Camera Murdara", value: totalDirty, color: "#ff9500", bg: "rgba(255,149,0,0.06)" },
           { label: "La Spalatorie", value: totalExternal, color: "#af52de", bg: "rgba(175,82,222,0.06)" },
           { label: "Total General", value: grandTotal, color: "#1d1d1f", bg: "rgba(0,0,0,0.03)" },
@@ -393,7 +393,7 @@ function HospitalLinenSimulator() {
       {/* Tab Navigation */}
       <div style={{
         display: "flex", gap: 2, marginBottom: 8,
-        background: "#e8e8ed", borderRadius: 7, padding: 2, width: "fit-content",
+        background: "#d2d2d7", borderRadius: 7, padding: 2, width: "fit-content",
       }}>
         {[
           { id: "flow", label: "Flux & Comenzi" },
@@ -432,7 +432,7 @@ function HospitalLinenSimulator() {
               <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Camera Curata</div>
               <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Primeste de la GW1</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: "#34c759", letterSpacing: "-0.03em" }}>{gw1Qty}</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: "#86868b", marginTop: 6 }}>
                 Stoc detaliat: {totalClean} articole
               </div>
               <div style={{ fontSize: 12, color: "#86868b", marginTop: 4, lineHeight: 1.6 }}>
@@ -449,7 +449,7 @@ function HospitalLinenSimulator() {
               <div style={{ fontSize: 16, fontWeight: 700, color: "#5856d6", marginBottom: 10 }}>Alocare pe Etaje</div>
               {ETAJE.map((floor, i) => (
                 <div key={floor.id} style={{ marginBottom: 10 }}>
-                  <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
+                  <div style={{ fontSize: 14, color: "#86868b", marginBottom: 4, fontWeight: 500 }}>{floor.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <button onClick={() => setFloorAllocAt(i, floorAlloc[i] - 10)} style={btnSmall("#86868b")}>−</button>
                     <input
@@ -460,7 +460,7 @@ function HospitalLinenSimulator() {
                     />
                     <button onClick={() => setFloorAllocAt(i, floorAlloc[i] + 10)} style={btnSmall("#5856d6")}>+</button>
                   </div>
-                  <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 3 }}>
+                  <div style={{ fontSize: 12, color: "#86868b", marginTop: 3 }}>
                     Saloane: {floor.rooms.join(", ")}
                   </div>
                 </div>
@@ -478,7 +478,7 @@ function HospitalLinenSimulator() {
               <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#af52de", marginBottom: 6 }}>Ridicare → Spalatorie</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
+                  <span style={{ fontSize: 13, color: "#86868b" }}>Ora:</span>
                   <input
                     type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)}
                     style={{
@@ -492,13 +492,13 @@ function HospitalLinenSimulator() {
                 }}>
                   Trimite tot ({totalDirty}) @ {pickupTime}
                 </button>
-                {lastPickup && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastPickup}</div>}
+                {lastPickup && <div style={{ fontSize: 12, color: "#86868b", marginTop: 4 }}>Ultima: {lastPickup}</div>}
               </div>
 
               <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", marginTop: 10, paddingTop: 10 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#0071e3", marginBottom: 6 }}>Returnare ← Spalatorie</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#34c759", marginBottom: 6 }}>Returnare ← Spalatorie</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, color: "#6e6e73" }}>Ora:</span>
+                  <span style={{ fontSize: 13, color: "#86868b" }}>Ora:</span>
                   <input
                     type="time" value={returnTime} onChange={(e) => setReturnTime(e.target.value)}
                     style={{
@@ -508,11 +508,11 @@ function HospitalLinenSimulator() {
                   />
                 </div>
                 <button onClick={returnAllFromCompany} style={{
-                  ...btnPrimary("#0071e3"), width: "100%", fontSize: 13, padding: "8px 10px",
+                  ...btnPrimary("#34c759"), width: "100%", fontSize: 13, padding: "8px 10px",
                 }}>
                   Primeste tot ({totalExternal}) @ {returnTime}
                 </button>
-                {lastReturn && <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 4 }}>Ultima: {lastReturn}</div>}
+                {lastReturn && <div style={{ fontSize: 12, color: "#86868b", marginTop: 4 }}>Ultima: {lastReturn}</div>}
                 <div style={{ fontSize: 13, color: "#af52de", marginTop: 8, fontWeight: 500 }}>La firma: {totalExternal} art.</div>
               </div>
             </div>
@@ -522,10 +522,10 @@ function HospitalLinenSimulator() {
               background: "rgba(0,113,227,0.04)", borderRadius: 14, padding: 14,
               border: "1px solid rgba(0,113,227,0.15)",
             }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#0071e3", marginBottom: 6 }}>Poarta 1</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#34c759", marginBottom: 6 }}>Poarta 1</div>
               <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Intrare</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 6 }}>Cantitate intrare:</div>
-              <StepperInput value={gw1Qty} onChange={setGw1Qty} step={50} accentColor="#0071e3" width={70} />
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 6 }}>Cantitate intrare:</div>
+              <StepperInput value={gw1Qty} onChange={setGw1Qty} step={50} accentColor="#34c759" width={70} />
               <div style={{ fontSize: 13, color: "#86868b", marginTop: 8 }}>
                 Alocat: {allocatedTotal} · Ramas: {remainInClean}
               </div>
@@ -544,31 +544,31 @@ function HospitalLinenSimulator() {
               background: "rgba(255,59,48,0.04)", borderRadius: 14, padding: 14,
               border: "1px solid rgba(255,59,48,0.12)",
             }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff3b30", marginBottom: 6 }}>Poarta 2</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff9500", marginBottom: 6 }}>Poarta 2</div>
               <div style={{ fontSize: 13, color: "#86868b", marginBottom: 10 }}>Scanare RFID Iesire</div>
-              <div style={{ fontSize: 13, color: "#6e6e73", marginBottom: 4 }}>Calcul automat (Σ Etaje):</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff3b30", letterSpacing: "-0.04em" }}>{gw2Qty}</div>
-              <div style={{ fontSize: 12, color: "#aeaeb2", marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: "#86868b", marginBottom: 4 }}>Calcul automat (Σ Etaje):</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#ff9500", letterSpacing: "-0.04em" }}>{gw2Qty}</div>
+              <div style={{ fontSize: 12, color: "#86868b", marginTop: 6 }}>
                 = {floorAlloc.map((v, i) => `E${i + 1}:${v}`).join(" + ")}
               </div>
             </div>
           </div>
 
           {/* Right: SVG Diagram */}
-          <div style={{ background: "#fafafa", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", flex: 1.1, minWidth: 0 }}>
+          <div style={{ background: "#f5f5f7", borderRadius: 14, padding: 12, border: "1px solid rgba(0,0,0,0.04)", flex: 1.1, minWidth: 0 }}>
             <svg viewBox="0 0 920 540" style={{ width: "100%", maxHeight: 500 }}>
               <defs>
                 <marker id="arrow-green" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
                 </marker>
                 <marker id="arrow-red" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff3b30" />
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff9500" />
                 </marker>
                 <marker id="arrow-purple" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#af52de" />
                 </marker>
                 <marker id="arrow-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#0071e3" />
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#34c759" />
                 </marker>
                 <filter id="softShadow" x="-10%" y="-10%" width="120%" height="130%">
                   <feDropShadow dx="0" dy="1" stdDeviation="3" floodOpacity="0.08" />
@@ -583,7 +583,7 @@ function HospitalLinenSimulator() {
               )}
 
               {/* Connection lines */}
-              <line x1={65} y1={260} x2={85} y2={260} stroke="#0071e3" strokeWidth={5} markerEnd="url(#arrow-blue)" opacity={0.6} />
+              <line x1={65} y1={260} x2={85} y2={260} stroke="#34c759" strokeWidth={5} markerEnd="url(#arrow-blue)" opacity={0.6} />
               <line x1={245} y1={240} x2={388} y2={110} stroke="#34c759" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-green)" opacity={0.45} />
               <line x1={245} y1={260} x2={388} y2={260} stroke="#34c759" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-green)" opacity={0.45} />
               <line x1={245} y1={280} x2={388} y2={410} stroke="#34c759" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-green)" opacity={0.45} />
@@ -600,34 +600,34 @@ function HospitalLinenSimulator() {
               <text x={545} y={252} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[1]}</text>
               <text x={555} y={355} textAnchor="middle" fontSize="14" fill="#ff9500" fontWeight="600">{floorAlloc[2]}</text>
 
-              <line x1={630} y1={260} x2={690} y2={260} stroke="#ff3b30" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
+              <line x1={630} y1={260} x2={690} y2={260} stroke="#ff9500" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-red)" opacity={0.5} />
               <line x1={810} y1={260} x2={818} y2={260} stroke="#af52de" strokeWidth={3} strokeDasharray="6,4" markerEnd="url(#arrow-purple)" opacity={0.5} />
               <text x={815} y={250} fontSize="11" fill="#af52de" opacity={0.7}>{pickupTime}</text>
 
               {/* Return path */}
               <path d="M 860 320 L 880 320 L 880 510 L 15 510 L 15 290 L 15 260 L 20 260"
-                stroke="#0071e3" strokeWidth={4} strokeDasharray="10,5" fill="none" markerEnd="url(#arrow-blue)" opacity={0.4} />
-              <text x={460} y={527} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="500" opacity={0.7}>
+                stroke="#34c759" strokeWidth={4} strokeDasharray="10,5" fill="none" markerEnd="url(#arrow-blue)" opacity={0.4} />
+              <text x={460} y={527} textAnchor="middle" fontSize="13" fill="#34c759" fontWeight="500" opacity={0.7}>
                 Returnare @ {returnTime} — Lenjerie curata inapoi prin GW1
               </text>
 
               {/* GW1 */}
-              <rect x={15} y={218} width={55} height={84} rx={12} fill="#fff" stroke="#0071e3" strokeWidth={1.5} filter="url(#softShadow)" />
-              <text x={42} y={240} textAnchor="middle" fontSize="13" fill="#0071e3" fontWeight="700">GW1</text>
+              <rect x={15} y={218} width={55} height={84} rx={12} fill="#fff" stroke="#34c759" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={42} y={240} textAnchor="middle" fontSize="13" fill="#34c759" fontWeight="700">GW1</text>
               <text x={42} y={254} textAnchor="middle" fontSize="10" fill="#86868b">RFID</text>
-              <text x={42} y={274} textAnchor="middle" fontSize="18" fill="#0071e3" fontWeight="700">{gw1Qty}</text>
-              <text x={42} y={295} textAnchor="middle" fontSize="9" fill="#aeaeb2" fontWeight="500">INTRARE</text>
-              <circle cx={10} cy={235} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" repeatCount="indefinite" /></circle>
-              <circle cx={10} cy={275} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.5s" repeatCount="indefinite" /></circle>
-              <circle cx={75} cy={235} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="1s" repeatCount="indefinite" /></circle>
-              <circle cx={75} cy={275} r={3.5} fill="#0071e3" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
+              <text x={42} y={274} textAnchor="middle" fontSize="18" fill="#34c759" fontWeight="700">{gw1Qty}</text>
+              <text x={42} y={295} textAnchor="middle" fontSize="9" fill="#86868b" fontWeight="500">INTRARE</text>
+              <circle cx={10} cy={235} r={3.5} fill="#34c759" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" repeatCount="indefinite" /></circle>
+              <circle cx={10} cy={275} r={3.5} fill="#34c759" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.5s" repeatCount="indefinite" /></circle>
+              <circle cx={75} cy={235} r={3.5} fill="#34c759" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="1s" repeatCount="indefinite" /></circle>
+              <circle cx={75} cy={275} r={3.5} fill="#34c759" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
 
               {/* Camera Curata */}
               <rect x={80} y={210} width={165} height={100} rx={14} fill="#fff" stroke="#34c759" strokeWidth={1.5} filter="url(#softShadow)" />
               <text x={162} y={232} textAnchor="middle" fontSize="14" fill="#34c759" fontWeight="700">Camera Curata</text>
               <text x={162} y={256} textAnchor="middle" fontSize="24" fill="#1d1d1f" fontWeight="700">{gw1Qty}</text>
               <text x={162} y={274} textAnchor="middle" fontSize="11" fill="#86868b">distributie pe 3 etaje</text>
-              <text x={162} y={290} textAnchor="middle" fontSize="11" fill="#aeaeb2">Ramas: {remainInClean}</text>
+              <text x={162} y={290} textAnchor="middle" fontSize="11" fill="#86868b">Ramas: {remainInClean}</text>
               {allocatedTotal > gw1Qty && (
                 <text x={162} y={304} textAnchor="middle" fontSize="11" fill="#ff3b30" fontWeight="600">SUPRA-ALOCAT</text>
               )}
@@ -641,7 +641,7 @@ function HospitalLinenSimulator() {
                   <g key={floor.id}>
                     <rect x={388} y={py - 57} width={143} height={114} rx={14} fill="#fff" stroke="#5856d6" strokeWidth={1.2} filter="url(#softShadow)" />
                     <text x={460} y={py - 34} textAnchor="middle" fontSize="14" fill="#5856d6" fontWeight="700">{floor.name}</text>
-                    <text x={460} y={py - 14} textAnchor="middle" fontSize="12" fill="#aeaeb2">
+                    <text x={460} y={py - 14} textAnchor="middle" fontSize="12" fill="#86868b">
                       Sal. {floor.rooms.join(", ")}
                     </text>
                     <text x={460} y={py + 14} textAnchor="middle" fontSize="24" fill="#1d1d1f" fontWeight="700">
@@ -655,15 +655,15 @@ function HospitalLinenSimulator() {
               })}
 
               {/* GW2 */}
-              <rect x={570} y={220} width={60} height={80} rx={12} fill="#fff" stroke="#ff3b30" strokeWidth={1.5} filter="url(#softShadow)" />
-              <text x={600} y={242} textAnchor="middle" fontSize="13" fill="#ff3b30" fontWeight="700">GW2</text>
+              <rect x={570} y={220} width={60} height={80} rx={12} fill="#fff" stroke="#ff9500" strokeWidth={1.5} filter="url(#softShadow)" />
+              <text x={600} y={242} textAnchor="middle" fontSize="13" fill="#ff9500" fontWeight="700">GW2</text>
               <text x={600} y={256} textAnchor="middle" fontSize="10" fill="#86868b">RFID</text>
-              <text x={600} y={278} textAnchor="middle" fontSize="18" fill="#ff3b30" fontWeight="700">{gw2Qty}</text>
-              <text x={600} y={293} textAnchor="middle" fontSize="10" fill="#aeaeb2" fontWeight="500">Σ ETAJE</text>
-              <circle cx={565} cy={237} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" repeatCount="indefinite" /></circle>
-              <circle cx={565} cy={277} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.5s" repeatCount="indefinite" /></circle>
-              <circle cx={635} cy={237} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="1s" repeatCount="indefinite" /></circle>
-              <circle cx={635} cy={277} r={3.5} fill="#ff3b30" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
+              <text x={600} y={278} textAnchor="middle" fontSize="18" fill="#ff9500" fontWeight="700">{gw2Qty}</text>
+              <text x={600} y={293} textAnchor="middle" fontSize="10" fill="#86868b" fontWeight="500">Σ ETAJE</text>
+              <circle cx={565} cy={237} r={3.5} fill="#ff9500" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" repeatCount="indefinite" /></circle>
+              <circle cx={565} cy={277} r={3.5} fill="#ff9500" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.5s" repeatCount="indefinite" /></circle>
+              <circle cx={635} cy={237} r={3.5} fill="#ff9500" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="1s" repeatCount="indefinite" /></circle>
+              <circle cx={635} cy={277} r={3.5} fill="#ff9500" opacity={0.3}><animate attributeName="opacity" values="0.15;0.6;0.15" dur="2s" begin="0.3s" repeatCount="indefinite" /></circle>
 
               {/* Camera Murdara */}
               <rect x={670} y={205} width={140} height={115} rx={14} fill="#fff" stroke="#ff9500" strokeWidth={1.5} filter="url(#softShadow)" />
@@ -672,7 +672,7 @@ function HospitalLinenSimulator() {
               <text x={740} y={268} textAnchor="middle" fontSize="11" fill="#86868b">articole (de la GW2: {gw2Qty})</text>
               <rect x={680} y={278} width={120} height={18} rx={4} fill="rgba(175,82,222,0.08)" />
               <text x={740} y={292} textAnchor="middle" fontSize="11" fill="#af52de" fontWeight="600">Ridicare @ {pickupTime}</text>
-              <text x={740} y={312} textAnchor="middle" fontSize="10" fill="#aeaeb2">Tot la Spalatorie</text>
+              <text x={740} y={312} textAnchor="middle" fontSize="10" fill="#86868b">Tot la Spalatorie</text>
 
               {/* Firma Spalatorie */}
               <rect x={820} y={205} width={80} height={115} rx={14} fill="#fff" stroke="#af52de" strokeWidth={1.5} filter="url(#softShadow)" />
@@ -681,7 +681,7 @@ function HospitalLinenSimulator() {
               <text x={860} y={271} textAnchor="middle" fontSize="20" fill="#1d1d1f" fontWeight="700">{totalExternal}</text>
               <text x={860} y={287} textAnchor="middle" fontSize="11" fill="#86868b">articole</text>
               <rect x={825} y={295} width={70} height={18} rx={4} fill="rgba(0,113,227,0.08)" />
-              <text x={860} y={308} textAnchor="middle" fontSize="11" fill="#0071e3" fontWeight="600">Ret. {returnTime}</text>
+              <text x={860} y={308} textAnchor="middle" fontSize="11" fill="#34c759" fontWeight="600">Ret. {returnTime}</text>
 
               {/* Particles */}
               {particles.map((p) => {
@@ -694,15 +694,15 @@ function HospitalLinenSimulator() {
               <g opacity={0.7}>
                 <text x={100} y={498} fontSize="12" fill="#86868b" fontWeight="500">Legenda:</text>
                 <line x1={165} y1={495} x2={190} y2={495} stroke="#34c759" strokeWidth={3} />
-                <text x={195} y={498} fontSize="11" fill="#6e6e73">Flux curat</text>
-                <line x1={265} y1={495} x2={290} y2={495} stroke="#ff3b30" strokeWidth={3} />
-                <text x={295} y={498} fontSize="11" fill="#6e6e73">Colectare murdar</text>
+                <text x={195} y={498} fontSize="11" fill="#86868b">Flux curat</text>
+                <line x1={265} y1={495} x2={290} y2={495} stroke="#ff9500" strokeWidth={3} />
+                <text x={295} y={498} fontSize="11" fill="#86868b">Colectare murdar</text>
                 <line x1={410} y1={495} x2={435} y2={495} stroke="#af52de" strokeWidth={3} />
-                <text x={440} y={498} fontSize="11" fill="#6e6e73">La firma</text>
-                <line x1={500} y1={495} x2={525} y2={495} stroke="#0071e3" strokeWidth={3} strokeDasharray="6,3" />
-                <text x={530} y={498} fontSize="11" fill="#6e6e73">Returnare</text>
-                <circle cx={600} cy={495} r={3.5} fill="#0071e3"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite" /></circle>
-                <text x={610} y={498} fontSize="11" fill="#6e6e73">Antena RFID</text>
+                <text x={440} y={498} fontSize="11" fill="#86868b">La firma</text>
+                <line x1={500} y1={495} x2={525} y2={495} stroke="#34c759" strokeWidth={3} strokeDasharray="6,3" />
+                <text x={530} y={498} fontSize="11" fill="#86868b">Returnare</text>
+                <circle cx={600} cy={495} r={3.5} fill="#34c759"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite" /></circle>
+                <text x={610} y={498} fontSize="11" fill="#86868b">Antena RFID</text>
               </g>
             </svg>
           </div>
@@ -724,7 +724,7 @@ function HospitalLinenSimulator() {
                 }}>
                   <span style={{ fontSize: 14 }}>{lt.icon} {lt.label}</span>
                   <button onClick={() => setCleanRoom((p) => ({ ...p, [lt.id]: Math.max(0, p[lt.id] - 10) }))}
-                    style={btnSmall("#c7c7cc")}>-10</button>
+                    style={btnSmall("#86868b")}>-10</button>
                   <span style={{ minWidth: 30, textAlign: "center", fontWeight: 700, color: "#1d1d1f" }}>{cleanRoom[lt.id]}</span>
                   <button onClick={() => setCleanRoom((p) => ({ ...p, [lt.id]: p[lt.id] + 10 }))}
                     style={btnSmall("#34c759")}>+10</button>
@@ -737,7 +737,7 @@ function HospitalLinenSimulator() {
             <h4 style={{ color: "#5856d6", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Distribuie Curat → Etaje</h4>
             {ETAJE.map((floor, fi) => (
               <div key={floor.id} style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 6, fontWeight: 500 }}>{floor.name}</div>
+                <div style={{ fontSize: 14, color: "#86868b", marginBottom: 6, fontWeight: 500 }}>{floor.name}</div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {TIPURI_LENJERIE.map((lt) => (
                     <button key={lt.id} onClick={() => distributeToFloor(fi, lt.id, 5)}
@@ -758,7 +758,7 @@ function HospitalLinenSimulator() {
             <h4 style={{ color: "#ff9500", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Colecteaza murdar ← Etaje (prin GW2)</h4>
             {ETAJE.map((floor, fi) => (
               <div key={floor.id} style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 14, color: "#6e6e73", marginBottom: 6, fontWeight: 500 }}>{floor.name}</div>
+                <div style={{ fontSize: 14, color: "#86868b", marginBottom: 6, fontWeight: 500 }}>{floor.name}</div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {TIPURI_LENJERIE.map((lt) => (
                     <button key={lt.id} onClick={() => collectFromFloor(fi, lt.id, 3)}
@@ -792,12 +792,12 @@ function HospitalLinenSimulator() {
               </div>
             </div>
             <div>
-              <h4 style={{ color: "#0071e3", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Primeste curat ← Spalatorie</h4>
+              <h4 style={{ color: "#34c759", margin: "0 0 10px", fontSize: 16, fontWeight: 600 }}>Primeste curat ← Spalatorie</h4>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {TIPURI_LENJERIE.map((lt) => (
                   <button key={lt.id} onClick={() => returnFromCleaning(lt.id, 5)}
                     style={{
-                      background: "rgba(0,113,227,0.06)", color: "#0071e3", border: "1px solid rgba(0,113,227,0.2)",
+                      background: "rgba(0,113,227,0.06)", color: "#34c759", border: "1px solid rgba(0,113,227,0.2)",
                       borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13,
                       fontFamily: font, fontWeight: 500,
                     }}>
@@ -817,7 +817,7 @@ function HospitalLinenSimulator() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 15 }}>
               <thead>
-                <tr style={{ borderBottom: "2px solid #e8e8ed" }}>
+                <tr style={{ borderBottom: "2px solid #d2d2d7" }}>
                   <th style={{ textAlign: "left", padding: "12px 14px", color: "#86868b", fontWeight: 500, fontSize: 14 }}>Locatie</th>
                   {TIPURI_LENJERIE.map((lt) => (
                     <th key={lt.id} style={{ textAlign: "center", padding: "12px 14px", color: lt.color, fontWeight: 600, fontSize: 14 }}>{lt.icon} {lt.label}</th>
@@ -826,12 +826,12 @@ function HospitalLinenSimulator() {
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(0,113,227,0.02)" }}>
-                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#0071e3" }}>Poarta 1 (intrare)</td>
-                  <td colSpan={4} style={{ textAlign: "center", padding: 10, fontSize: 16, fontWeight: 700, color: "#0071e3" }}>{gw1Qty}</td>
+                <tr style={{ borderBottom: "1px solid #d2d2d7", background: "rgba(0,113,227,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#34c759" }}>Poarta 1 (intrare)</td>
+                  <td colSpan={4} style={{ textAlign: "center", padding: 10, fontSize: 16, fontWeight: 700, color: "#34c759" }}>{gw1Qty}</td>
                   <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{gw1Qty}</td>
                 </tr>
-                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(52,199,89,0.02)" }}>
+                <tr style={{ borderBottom: "1px solid #d2d2d7", background: "rgba(52,199,89,0.02)" }}>
                   <td style={{ padding: "10px 12px", fontWeight: 600, color: "#34c759" }}>Camera Curata</td>
                   {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{cleanRoom[lt.id]}</td>)}
                   <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{totalClean}</td>
@@ -840,19 +840,19 @@ function HospitalLinenSimulator() {
                   const stock = floorStock[i];
                   const ft = TIPURI_LENJERIE.reduce((a, lt) => a + stock[lt.id], 0);
                   return (
-                    <tr key={floor.id} style={{ borderBottom: "1px solid #f0f0f5" }}>
+                    <tr key={floor.id} style={{ borderBottom: "1px solid #d2d2d7" }}>
                       <td style={{ padding: "10px 12px", color: "#5856d6", fontWeight: 500 }}>{floor.name} (alocat: {floorAlloc[i]})</td>
                       {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{stock[lt.id]}</td>)}
                       <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{ft}</td>
                     </tr>
                   );
                 })}
-                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(255,59,48,0.02)" }}>
-                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#ff3b30" }}>Poarta 2 (Σ etaje)</td>
-                  <td colSpan={4} style={{ textAlign: "center", padding: 10, fontSize: 16, fontWeight: 700, color: "#ff3b30" }}>{gw2Qty}</td>
+                <tr style={{ borderBottom: "1px solid #d2d2d7", background: "rgba(255,59,48,0.02)" }}>
+                  <td style={{ padding: "10px 12px", fontWeight: 600, color: "#ff9500" }}>Poarta 2 (Σ etaje)</td>
+                  <td colSpan={4} style={{ textAlign: "center", padding: 10, fontSize: 16, fontWeight: 700, color: "#ff9500" }}>{gw2Qty}</td>
                   <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{gw2Qty}</td>
                 </tr>
-                <tr style={{ borderBottom: "1px solid #f0f0f5", background: "rgba(255,149,0,0.02)" }}>
+                <tr style={{ borderBottom: "1px solid #d2d2d7", background: "rgba(255,149,0,0.02)" }}>
                   <td style={{ padding: "10px 12px", fontWeight: 600, color: "#ff9500" }}>Camera Murdara</td>
                   {TIPURI_LENJERIE.map((lt) => <td key={lt.id} style={{ textAlign: "center", padding: 10 }}>{dirtyRoom[lt.id]}</td>)}
                   <td style={{ textAlign: "center", padding: 10, fontWeight: 700 }}>{totalDirty}</td>
@@ -886,12 +886,12 @@ function HospitalLinenSimulator() {
             maxHeight: 380, overflowY: "auto",
             fontFamily: "'SF Mono', 'Fira Code', 'Menlo', monospace", fontSize: 14,
           }}>
-            {log.length === 0 && <p style={{ color: "#aeaeb2", fontFamily: font }}>Niciun eveniment inca. Porneste simularea sau foloseste comenzile manuale.</p>}
+            {log.length === 0 && <p style={{ color: "#86868b", fontFamily: font }}>Niciun eveniment inca. Porneste simularea sau foloseste comenzile manuale.</p>}
             {log.map((entry, i) => (
               <div key={i} style={{
-                padding: "6px 0", borderBottom: "1px solid #f0f0f5", color: "#1d1d1f",
+                padding: "6px 0", borderBottom: "1px solid #d2d2d7", color: "#1d1d1f",
               }}>
-                <span style={{ color: "#aeaeb2" }}>[{entry.ts}]</span> {entry.msg}
+                <span style={{ color: "#86868b" }}>[{entry.ts}]</span> {entry.msg}
               </div>
             ))}
           </div>
@@ -905,13 +905,13 @@ function HospitalLinenSimulator() {
         border: "1px solid rgba(0,0,0,0.04)",
         boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
       }}>
-        <strong style={{ color: "#6e6e73" }}>Arhitectura sistem:</strong>{" "}
-        <span style={{ color: "#0071e3" }}>Poarta 1</span> are o cantitate de intrare editabila.
+        <strong style={{ color: "#86868b" }}>Arhitectura sistem:</strong>{" "}
+        <span style={{ color: "#34c759" }}>Poarta 1</span> are o cantitate de intrare editabila.
         Alocati manual articolele pe fiecare etaj.{" "}
-        <span style={{ color: "#ff3b30" }}>Poarta 2</span> se calculeaza automat ca Σ(Etaj 1 + 2 + 3).{" "}
+        <span style={{ color: "#ff9500" }}>Poarta 2</span> se calculeaza automat ca Σ(Etaj 1 + 2 + 3).{" "}
         <strong style={{ color: "#af52de" }}>Program:</strong> Toata lenjeria murdara este ridicata la ora{" "}
         <span style={{ color: "#af52de", fontWeight: 600 }}>{pickupTime}</span> si returnata curata la ora{" "}
-        <span style={{ color: "#0071e3", fontWeight: 600 }}>{returnTime}</span>.
+        <span style={{ color: "#34c759", fontWeight: 600 }}>{returnTime}</span>.
       </div>
     </div>
   );
