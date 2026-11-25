@@ -1,5 +1,10 @@
 # Hospital linen simulator
 
+[![CI](https://github.com/sergiudanstan/hospital-linen-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/sergiudanstan/hospital-linen-simulator/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/sergiudanstan/hospital-linen-simulator/actions/workflows/codeql.yml/badge.svg)](https://github.com/sergiudanstan/hospital-linen-simulator/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/sergiudanstan/hospital-linen-simulator/badge)](https://scorecard.dev/viewer/?uri=github.com/sergiudanstan/hospital-linen-simulator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Browser simulator of RFID-tracked hospital linen flow, with a Romanian UI. It models clean linen entering through a first gateway, being distributed to three hospital floors, returning through a second gateway as dirty linen, and cycling through an external laundry.
 
 **Live:** https://sergiudanstan.github.io/hospital-linen-simulator/
