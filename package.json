@@ -1,0 +1,14 @@
+{
+  "name": "hospital-linen-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser simulator of RFID-tracked hospital linen flow (clean room, floors, dirty room, external laundry), Romanian UI",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.65.0"
+  }
+}
